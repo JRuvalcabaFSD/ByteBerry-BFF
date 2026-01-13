@@ -1,0 +1,19 @@
+{
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.preferences.useAliasesForWorkspaceTsdk": true,
+	"typescript.suggest.paths.enabled": true,
+	"typescript.preferences.includePackageJsonAutoImports": "auto",
+	"json.schemaDownload.enable": false,
+	"files.exclude": {
+		"**/node_modules": true,
+		"dist": true,
+		"keys": true,
+		"generated": true,
+		"coverage": true,
+		"logs": true
+	},
+	"cSpell.words": ["SSSZ"],
+	"files.associations": {
+		"*.css": "tailwindcss"
+	}
+}

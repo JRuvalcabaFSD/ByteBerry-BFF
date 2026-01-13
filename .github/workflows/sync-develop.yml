@@ -1,0 +1,37 @@
+# .github/workflows/sync-develop.yml
+name: Sync develop with main
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Config git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch remotes
+        run: git fetch origin --prune
+
+      - name: Fast-forward develop to main if possible
+        run: |
+          git checkout develop
+          # Intentar fast-forward
+          if git merge-base --is-ancestor origin/develop origin/main; then
+            git merge --ff-only origin/main
+          else
+            # Si no es FF, crear commit de merge normal
+            git merge --no-ff origin/main -m "chore: sync develop with main"
+          fi
+          git push origin develop

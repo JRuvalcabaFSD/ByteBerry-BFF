@@ -1,0 +1,45 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"resolveJsonModule": true,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"skipLibCheck": true,
+		"outDir": "./dist",
+		"baseUrl": ".",
+		"paths": {
+			"@application": ["src/application/index.ts"],
+			"@bootstrap": ["src/bootstrap/index.ts"],
+			"@config": ["src/config/index.ts"],
+			"@container": ["src/container/index.ts"],
+			"@domain": ["src/domain/index.ts"],
+			"@infrastructure": ["src/infrastructure/index.ts"],
+			"@interfaces": ["src/interfaces/index.ts"],
+			"@presentation": ["src/presentation/index.ts"],
+			"@shared": ["src/shared/index.ts"],
+			"@prisma/client": ["./generated/prisma/client.ts"],
+			"@ServiceMap": ["./src/interfaces/container/service-map.interface.ts"]
+		},
+
+		"declaration": true,
+		"sourceMap": true,
+		"noEmitOnError": true,
+		"isolatedModules": true,
+		"noEmit": false,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
+	},
+	"include": [
+		"src/**/*",
+		"tests/**/*",
+		"src/shared/@types/**/*",
+		"tests/vitest-globals.d.ts",
+		"prisma/seed.ts"
+	],
+	"exclude": ["node_modules", "dist"]
+}
