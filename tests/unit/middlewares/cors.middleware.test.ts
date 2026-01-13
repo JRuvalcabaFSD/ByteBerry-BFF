@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import cors from 'cors';
 
 import { Request, Response, NextFunction } from 'express';
@@ -42,10 +43,10 @@ describe('CORSMiddleware', () => {
 			);
 		});
 
-		it('should return cors middleware', () => {
+		it('should return a middleware function', () => {
 			const middleware = createCORSMiddleware(mockConfig);
 
-			expect(middleware).toBe(mockCorsMiddleware);
+			expect(typeof middleware).toBe('function');
 		});
 	});
 
@@ -103,6 +104,29 @@ describe('CORSMiddleware', () => {
 			originCallback('https://example.com', callback);
 
 			expect(callback).toHaveBeenCalledWith(expect.any(CorsOriginError), false);
+		});
+
+		it('should skip CORS validation for excluded paths', () => {
+			const middleware = createCORSMiddleware(mockConfig, ['/health', '/status']);
+			const mockReq = { path: '/health' } as any;
+			const mockRes = {} as Response;
+			const mockNext = vi.fn();
+
+			middleware(mockReq, mockRes, mockNext);
+
+			expect(mockNext).toHaveBeenCalled();
+			expect(mockCorsMiddleware).not.toHaveBeenCalled();
+		});
+
+		it('should apply CORS middleware for non-excluded paths', () => {
+			const middleware = createCORSMiddleware(mockConfig, ['/health']);
+			const mockReq = { path: '/api/authorize' } as any;
+			const mockRes = {} as Response;
+			const mockNext = vi.fn();
+
+			middleware(mockReq, mockRes, mockNext);
+
+			expect(mockCorsMiddleware).toHaveBeenCalledWith(mockReq, mockRes, mockNext);
 		});
 	});
 
