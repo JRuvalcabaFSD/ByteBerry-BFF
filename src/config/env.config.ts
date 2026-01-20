@@ -19,6 +19,15 @@ export class Config implements IConfig {
 	//Security environments
 	readonly corsOrigins: string[];
 
+	//OAuth2 environments
+	readonly bffClientId: string;
+	readonly bffClientSecret: string;
+	readonly oauth2ServiceUrl: string;
+
+	// Http Client environments
+	readonly httpMaxRetries: number;
+	readonly httpRetryDelay: number;
+
 	constructor() {
 		try {
 			// ========================================
@@ -41,6 +50,19 @@ export class Config implements IConfig {
 			this.corsOrigins = this.normalizeUrls(
 				env.get('CORS_ORIGINS').default('http://localhost:5173,http://localhost:4003,http://localhost:4002').asArray(',')
 			);
+
+			// ========================================
+			// OAuth2 environments
+			// ========================================
+			this.bffClientId = env.get('BFF_CLIENT_ID').default('byteberry-bff-client').asString();
+			this.bffClientSecret = env.get('BFF_CLIENT_SECRET').required().asString();
+			this.oauth2ServiceUrl = this.normalizeUrls(env.get('OAUTH2_SERVICE_URL').default('http://oauth2-service:4000').asUrlString());
+
+			// ========================================
+			// Http client environments
+			// ========================================
+			this.httpMaxRetries = env.get('HTTP_MAX_RETRIES').default('3').asIntPositive();
+			this.httpRetryDelay = env.get('HTTP_RETRY_DELAY').default('1000').asIntPositive();
 		} catch (error) {
 			throw new ConfigError(`Failed to validate environment variables ${getErrMessage(error)}}`, this.generateContext());
 		}

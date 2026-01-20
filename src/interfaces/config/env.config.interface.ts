@@ -48,6 +48,15 @@ export interface IConfig extends HealthCheckable {
 	//Security
 	readonly corsOrigins: string[];
 
+	//OAuth2
+	readonly bffClientId: string;
+	readonly bffClientSecret: string;
+	readonly oauth2ServiceUrl: string;
+
+	// Http Client
+	readonly httpMaxRetries: number;
+	readonly httpRetryDelay: number;
+
 	//Functions.
 	isDevelopment(): boolean;
 	isProduction(): boolean;

@@ -1,3 +1,7 @@
+//Authorization
+export * from "./auth/auth-client.interface.js"
+
+
 //Config
 export * from './config/env.config.interface.js';
 
