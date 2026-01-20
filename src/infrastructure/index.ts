@@ -1,5 +1,7 @@
-//Clients
-export * from "./clients/oauth.client.js"
+// Adapters
+export * from './adapters/oauth.adapter.js';
+export * from './adapters/jwks.adapter.js';
+export * from './adapters/jwt-verifier.adapter.js';
 
 //Http
 export * from './http/http.server.js';

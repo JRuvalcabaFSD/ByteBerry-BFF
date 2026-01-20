@@ -4,7 +4,7 @@ import { Injectable, LogContextClass, LogContextMethod } from '@shared';
 //TODO documentar
 declare module '@ServiceMap' {
 	interface ServiceMap {
-		OAuthClient: OAuthClient;
+		OAuthClientAdapter: OAuthClientAdapter;
 	}
 }
 
@@ -18,8 +18,8 @@ declare module '@ServiceMap' {
  */
 
 @LogContextClass()
-@Injectable({ name: 'OAuthClient', depends: ['Config', 'Logger'] })
-export class OAuthClient implements IAuthClient {
+@Injectable({ name: 'OAuthClientAdapter', depends: ['Config', 'Logger'] })
+export class OAuthClientAdapter implements IAuthClient {
 	private readonly maxRetries: number;
 	private readonly retryDelayMs: number;
 	private readonly oauth2ServiceUrl: string;

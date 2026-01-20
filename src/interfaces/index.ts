@@ -1,6 +1,7 @@
-//Authorization
-export * from "./auth/auth-client.interface.js"
-
+// Adapters
+export * from './adapters/OAuth-adapter.interface.js';
+export * from './adapters/jwks.adapter.interface.js';
+export * from './adapters/jwt-verifier.interface.js';
 
 //Config
 export * from './config/env.config.interface.js';

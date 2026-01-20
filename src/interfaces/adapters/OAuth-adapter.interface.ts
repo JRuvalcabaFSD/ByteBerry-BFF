@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //TODO documentar
 declare module '@ServiceMap' {
 	interface ServiceMap {
@@ -17,12 +18,12 @@ declare module '@ServiceMap' {
  */
 
 export interface AuthorizationUrlParams {
-  clientId: string;
-  redirectUri: string;
-  scope: string;
-  state: string;
-  codeChallenge: string;
-  codeChallengeMethod: 'S256' | 'plain';
+	clientId: string;
+	redirectUri: string;
+	scope: string;
+	state: string;
+	codeChallenge: string;
+	codeChallengeMethod: 'S256' | 'plain';
 }
 
 /**
@@ -36,11 +37,11 @@ export interface AuthorizationUrlParams {
  */
 
 export interface TokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  refresh_token?: string | undefined;
-  scope?: string | undefined;
+	access_token: string;
+	token_type: string;
+	expires_in: number;
+	refresh_token?: string | undefined;
+	scope?: string | undefined;
 }
 
 /**
@@ -53,9 +54,9 @@ export interface TokenResponse {
  */
 
 export interface TokenValidationResponse {
-  valid: boolean;
-  payload?: any;
-  error?: string;
+	valid: boolean;
+	payload?: any;
+	error?: string;
 }
 
 /**
@@ -65,7 +66,6 @@ export interface TokenValidationResponse {
  */
 
 export interface IAuthClient {
-
 	/**
 	 * Generates the authorization URL for initiating the OAuth2 flow.
 	 * @param params - The parameters required to build the authorization URL.

@@ -28,6 +28,15 @@ export class Config implements IConfig {
 	readonly httpMaxRetries: number;
 	readonly httpRetryDelay: number;
 
+	// JWT environments
+	readonly jwtIssuer: string;
+	readonly jwtAudience: string;
+	readonly jwksUrl: string;
+
+	// JWKS environments
+	readonly jwksCacheTtl: number;
+	readonly jwksCacheMaxAge: number;
+
 	constructor() {
 		try {
 			// ========================================
@@ -63,6 +72,21 @@ export class Config implements IConfig {
 			// ========================================
 			this.httpMaxRetries = env.get('HTTP_MAX_RETRIES').default('3').asIntPositive();
 			this.httpRetryDelay = env.get('HTTP_RETRY_DELAY').default('1000').asIntPositive();
+
+			// ========================================
+			// JWT environments
+			// ========================================
+
+			this.jwtIssuer = this.normalizeUrls(env.get('JWT_ISSUER').default('https://byteberry.jrmdev.org').asUrlString());
+			this.jwtAudience = env.get('JWT_AUDIENCE').default('byteberry-bff').asString();
+
+			// ========================================
+			// JWKS environments
+			// ========================================
+
+			this.jwksCacheTtl = env.get('JWKS_CACHE_TTL').default('3600').asIntPositive();
+			this.jwksCacheMaxAge = env.get('JWKS_CACHE_MAX_AGE').default('86400').asIntPositive();
+			this.jwksUrl = this.normalizeUrls(env.get('JWKS_URL').default('http://localhost:4000/auth/.well-known/jwks.json').asUrlString());
 		} catch (error) {
 			throw new ConfigError(`Failed to validate environment variables ${getErrMessage(error)}}`, this.generateContext());
 		}
