@@ -1,0 +1,25 @@
+services:
+  byteberry-bff:
+    image: jruvalcabafsd/byteberry-bff:${TAG:-latest}
+    container_name: byteberry-bff
+    ports:
+      - "4002:4002" # ← SOLO PARA DESARROLLO LOCAL
+    env_file:
+      - .env
+    environment:
+      - JWKS_URL=http://byteberry-oauth2:4000/auth/.well-known/jwks.json
+    networks:
+      - byteberry-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4002/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+networks:
+  byteberry-network:
+    external: true
+    name: byteberry-network
+    driver: bridge
