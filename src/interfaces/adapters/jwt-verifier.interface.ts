@@ -1,3 +1,10 @@
+//TODO documentar
+declare module '@ServiceMap' {
+	interface ServiceMap {
+		JwtVerifier: IJwtVerifier;
+	}
+}
+
 /**
  * Represents the payload of a JSON Web Token (JWT), containing standard claims and additional fields.
  * This interface defines the structure for JWT payloads used in authentication and authorization processes.

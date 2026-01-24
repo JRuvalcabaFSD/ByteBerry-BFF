@@ -34,7 +34,7 @@ export class JwksAdapter implements IJwksClientAdapter {
 		config: IConfig,
 		private readonly logger: ILogger
 	) {
-		this.CACHE_TTL = config.jwksCacheTtl;
+		this.CACHE_TTL = config.jwksCacheTtl * 1000;
 		this.jwksUrl = config.jwksUrl;
 		this.serviceName = config.serviceName;
 		this.version = config.version;

@@ -1,8 +1,11 @@
 import { Router, Request, Response } from 'express';
 
 import { Injectable } from '@shared';
-import type { HomeResponse, IClock, IConfig, IHealthService } from '@interfaces';
+import type { HomeResponse, IClock, IConfig, IHealthService, IJwtVerifier, ILogger } from '@interfaces';
 import { createHealthRoutes } from './health.routes.js';
+import { createMeRoutes } from './me.routes.js';
+import { MeController } from '../controllers/me.controller.js';
+import { createAuthMiddleware } from '../middlewares/auth.middleware.js';
 
 /**
  * Extends the global ServiceMap interface to include the IConfig interface.
@@ -18,14 +21,17 @@ declare module '@ServiceMap' {
 }
 
 //TODO documentar
-@Injectable({ name: 'AppRouter', depends: ['Config', 'Clock', 'HealthService'] })
+@Injectable({ name: 'AppRouter', depends: ['Config', 'Clock', 'HealthService', 'Logger', 'JwtVerifier', 'MeController'] })
 export class AppRouter {
 	private readonly router: Router;
 
 	constructor(
 		private readonly config: IConfig,
 		private readonly clock: IClock,
-		private readonly heathService: IHealthService
+		private readonly heathService: IHealthService,
+		private readonly logger: ILogger,
+		private readonly jwtVerifier: IJwtVerifier,
+		private readonly meCtl: MeController
 	) {
 		this.router = Router();
 		this.setupRoutes();
@@ -52,6 +58,11 @@ export class AppRouter {
 
 	private setupRoutes(): void {
 		const baseurl = `${this.config.serviceUrl}:${this.config.port}`;
+
+		const requireAuth = createAuthMiddleware(this.jwtVerifier, this.logger);
+
+		//Me
+		this.router.use('/api/user', requireAuth, createMeRoutes(this.meCtl));
 
 		//Health
 		this.router.use('/health', createHealthRoutes(this.heathService));
@@ -94,6 +105,7 @@ export class AppRouter {
 			{ name: 'home', value: `${baseUrl}/`, method: 'GET' },
 			{ name: 'deepHealth', value: `${baseUrl}/health/deep`, method: 'GET' },
 			{ name: 'health', value: `${baseUrl}/health`, method: 'GET' },
+			{ name: 'me', value: `${baseUrl}/api/user/me`, method: 'GET' },
 			// { name: 'authorize', value: `${baseUrl}/auth/authorize`, method: 'GET' },
 			// { name: 'JWKS', value: `${baseUrl}/auth/.well-known/jwks.json`, method: 'GET' },
 			// { name: 'login', value: `${baseUrl}/auth/login`, method: 'POST' },

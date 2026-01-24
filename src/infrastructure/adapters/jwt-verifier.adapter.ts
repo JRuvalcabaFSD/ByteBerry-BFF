@@ -1,6 +1,7 @@
+import jwt from 'jsonwebtoken';
+
 import type { IConfig, IJwksClientAdapter, IJwtPayload, IJwtVerifier, ILogger } from '@interfaces';
 import { AuthenticatedError, Injectable, LogContextClass, LogContextMethod } from '@shared';
-import { decode, JsonWebTokenError, TokenExpiredError, verify, VerifyOptions } from 'jsonwebtoken';
 
 /**
  * Adapter for verifying and decoding JSON Web Tokens (JWTs) using JWKS (JSON Web Key Set).
@@ -12,7 +13,7 @@ import { decode, JsonWebTokenError, TokenExpiredError, verify, VerifyOptions } f
  */
 
 @LogContextClass()
-@Injectable({ name: 'JwksClientAdapter', depends: ['Config', 'JwksClientAdapter', 'Logger'] })
+@Injectable({ name: 'JwtVerifier', depends: ['Config', 'JwksClientAdapter', 'Logger'] })
 export class JwtVerifierAdapter implements IJwtVerifier {
 	private readonly expectedIssuer: string;
 	private readonly expectedAudience: string;
@@ -48,13 +49,13 @@ export class JwtVerifierAdapter implements IJwtVerifier {
 			this.logger.debug('Fetching public key for verification', { kid: header.kid });
 			const publicKey = await this.jwksClient.getPublicKey(header.kid);
 
-			const options: VerifyOptions = {
+			const options: jwt.VerifyOptions = {
 				algorithms: ['RS256'],
 				issuer: this.expectedIssuer,
 				clockTolerance: 30,
 			};
 
-			const verified = verify(token, publicKey, options) as IJwtPayload;
+			const verified = jwt.verify(token, publicKey, options) as IJwtPayload;
 
 			this.validateAudience(verified.aud);
 			this.logger.debug('Token verified successfully', { sub: verified.sub, client_id: verified.client_id, scope: verified.scope });
@@ -65,14 +66,14 @@ export class JwtVerifierAdapter implements IJwtVerifier {
 				throw error;
 			}
 
-			if (error instanceof TokenExpiredError) {
+			if (error instanceof jwt.TokenExpiredError) {
 				this.logger.warn('Token expired', {
 					expiredAt: error.expiredAt,
 				});
 				throw new AuthenticatedError('Token has expired', 'TOKEN_EXPIRED');
 			}
 
-			if (error instanceof JsonWebTokenError) {
+			if (error instanceof jwt.JsonWebTokenError) {
 				this.logger.warn('JWT verification failed', {
 					error: error.message,
 					name: error.name,
@@ -117,7 +118,7 @@ export class JwtVerifierAdapter implements IJwtVerifier {
 	 */
 
 	private getTokenHeader(token: string) {
-		const decoded = decode(token, { complete: true });
+		const decoded = jwt.decode(token, { complete: true });
 
 		if (!decoded || typeof decoded !== 'object' || !decoded.header) {
 			throw AuthenticatedError.invalidTokenFormat();
