@@ -12,12 +12,10 @@ export default mergeConfig(
 				shuffle: false,
 			},
 			setupFiles: ['./tests/setup/setup.ts'],
-			coverage: {
-				enabled: false,
-			},
 			env: {
 				NODE_ENV: 'test',
 			},
+			testTimeout: 30000,
 		},
 	})
 );

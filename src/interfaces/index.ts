@@ -1,3 +1,8 @@
+// Adapters
+export * from './adapters/OAuth-adapter.interface.js';
+export * from './adapters/jwks.adapter.interface.js';
+export * from './adapters/jwt-verifier.interface.js';
+
 //Config
 export * from './config/env.config.interface.js';
 
@@ -13,3 +18,6 @@ export * from './services/clock.service.interface.js';
 export * from './services/logger.service.interface.js';
 export * from './services/health.service.interface.js';
 export * from './services/uuid.service.interface.js';
+
+//Use cases
+export * from './uses-cases/user.use-case.interface.js';

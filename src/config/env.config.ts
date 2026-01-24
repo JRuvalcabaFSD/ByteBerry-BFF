@@ -19,6 +19,24 @@ export class Config implements IConfig {
 	//Security environments
 	readonly corsOrigins: string[];
 
+	//OAuth2 environments
+	readonly bffClientId: string;
+	readonly bffClientSecret: string;
+	readonly oauth2ServiceUrl: string;
+
+	// Http Client environments
+	readonly httpMaxRetries: number;
+	readonly httpRetryDelay: number;
+
+	// JWT environments
+	readonly jwtIssuer: string;
+	readonly jwtAudience: string;
+	readonly jwksUrl: string;
+
+	// JWKS environments
+	readonly jwksCacheTtl: number;
+	readonly jwksCacheMaxAge: number;
+
 	constructor() {
 		try {
 			// ========================================
@@ -41,6 +59,34 @@ export class Config implements IConfig {
 			this.corsOrigins = this.normalizeUrls(
 				env.get('CORS_ORIGINS').default('http://localhost:5173,http://localhost:4003,http://localhost:4002').asArray(',')
 			);
+
+			// ========================================
+			// OAuth2 environments
+			// ========================================
+			this.bffClientId = env.get('BFF_CLIENT_ID').default('byteberry-bff-client').asString();
+			this.bffClientSecret = env.get('BFF_CLIENT_SECRET').required().asString();
+			this.oauth2ServiceUrl = this.normalizeUrls(env.get('OAUTH2_SERVICE_URL').default('http://oauth2-service:4000').asUrlString());
+
+			// ========================================
+			// Http client environments
+			// ========================================
+			this.httpMaxRetries = env.get('HTTP_MAX_RETRIES').default('3').asIntPositive();
+			this.httpRetryDelay = env.get('HTTP_RETRY_DELAY').default('1000').asIntPositive();
+
+			// ========================================
+			// JWT environments
+			// ========================================
+
+			this.jwtIssuer = this.normalizeUrls(env.get('JWT_ISSUER').default('https://byteberry.jrmdev.org').asUrlString());
+			this.jwtAudience = env.get('JWT_AUDIENCE').default('byteberry-bff').asString();
+
+			// ========================================
+			// JWKS environments
+			// ========================================
+
+			this.jwksCacheTtl = env.get('JWKS_CACHE_TTL').default('3600').asIntPositive();
+			this.jwksCacheMaxAge = env.get('JWKS_CACHE_MAX_AGE').default('86400').asIntPositive();
+			this.jwksUrl = this.normalizeUrls(env.get('JWKS_URL').default('http://localhost:4000/auth/.well-known/jwks.json').asUrlString());
 		} catch (error) {
 			throw new ConfigError(`Failed to validate environment variables ${getErrMessage(error)}}`, this.generateContext());
 		}

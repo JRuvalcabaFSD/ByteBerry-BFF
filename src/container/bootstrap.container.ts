@@ -3,9 +3,9 @@
  * and initializing the dependency injection container.
  * @module src/container/bootstrap.container
  */
-// import '@application';
+import '@application';
 import '@config';
-// import '@bootstrap';
+import '@bootstrap';
 import '@infrastructure';
 import '@presentation';
 

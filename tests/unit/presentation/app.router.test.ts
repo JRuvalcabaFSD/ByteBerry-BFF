@@ -1,14 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express, { Express } from 'express';
-import type { IConfig, IClock, IHealthService } from '@interfaces';
-import { AppRouter } from '@presentation';
+import type { IConfig, IClock, IHealthService, ILogger, IJwtVerifier } from '@interfaces';
+import { AppRouter, MeController } from '@presentation';
 
 describe('AppRouter', () => {
 	let app: Express;
 	let mockConfig: IConfig;
 	let mockClock: IClock;
 	let mockHealthService: IHealthService;
+	let mockLogger: ILogger;
+	let mockJwtVerifier: IJwtVerifier;
+	let mockMeCtl: MeController;
 	let appRouter: AppRouter;
 
 	beforeEach(() => {
@@ -33,7 +36,24 @@ describe('AppRouter', () => {
 			}),
 		} as unknown as IHealthService;
 
-		appRouter = new AppRouter(mockConfig, mockClock, mockHealthService);
+		mockLogger = {
+			info: vi.fn(),
+			error: vi.fn(),
+			warn: vi.fn(),
+			debug: vi.fn(),
+		} as unknown as ILogger;
+
+		mockJwtVerifier = {
+			verify: vi.fn(),
+		} as unknown as IJwtVerifier;
+
+		mockMeCtl = {
+			handle: vi.fn(async (req, res) => {
+				res.status(200).json({ user: 'test' });
+			}),
+		} as unknown as MeController;
+
+		appRouter = new AppRouter(mockConfig, mockClock, mockHealthService, mockLogger, mockJwtVerifier, mockMeCtl);
 
 		app = express();
 		app.use((req, _res, next) => {

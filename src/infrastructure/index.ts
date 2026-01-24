@@ -1,16 +1,7 @@
-// ======================================
-// import modules for implements decorators
-// ======================================
-import './services/clock.service.js';
-import './services/health.service.js';
-import './services/uuid.service.js';
-import './services/winston-logger.service.js';
-import './http/http.server.js';
-import './lifecycle/shutdown.js';
-
-// ======================================
-// Export modules
-// ======================================
+// Adapters
+export * from './adapters/oauth.adapter.js';
+export * from './adapters/jwks.adapter.js';
+export * from './adapters/jwt-verifier.adapter.js';
 
 //Http
 export * from './http/http.server.js';

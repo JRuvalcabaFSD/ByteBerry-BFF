@@ -2,11 +2,13 @@ import { bootstrapContainer, criticalServices } from '@container';
 import { ContainerCreationError, InjectableError, TokenNotRegisteredError } from '@shared';
 import { Container } from '@container';
 import { AppError } from '@domain';
+import { vi } from 'vitest';
 
 describe('Bootstrap Container', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		process.env.DATABASE_URL = "dummy"
+		process.env.BFF_CLIENT_SECRET = "dummy"
 	});
 
 	afterEach(() => {
@@ -130,7 +132,7 @@ describe('Bootstrap Container', () => {
 			// Mock Container para simular servicio no registrado
 			const originalContainer = Container;
 
-			vi.spyOn(Container.prototype, 'isRegistered').mockImplementation(function(this: any, token: string) {
+			vi.spyOn(Container.prototype, 'isRegistered').mockImplementation(function (this: any, token: string) {
 				// Simular que 'Config' no está registrado
 				if (token === 'Config') return false;
 				// Llamar al método original para otros tokens
@@ -143,7 +145,7 @@ describe('Bootstrap Container', () => {
 
 		it('should throw ContainerCreationError when service resolution fails', () => {
 			// Mock Container para simular error en resolve
-			vi.spyOn(Container.prototype, 'resolve').mockImplementation(function(this: any, token: string) {
+			vi.spyOn(Container.prototype, 'resolve').mockImplementation(function (this: any, token: string) {
 				if (token === 'Config') {
 					throw new Error('Resolution failed');
 				}
@@ -156,7 +158,7 @@ describe('Bootstrap Container', () => {
 
 		it('should re-throw AppError when validation encounters AppError', () => {
 			// Mock para lanzar un AppError específico
-			vi.spyOn(Container.prototype, 'resolve').mockImplementation(function(this: any, token: string) {
+			vi.spyOn(Container.prototype, 'resolve').mockImplementation(function (this: any, token: string) {
 				if (token === 'Config') {
 					throw new AppError('This is an AppError', 'APP_ERROR' as any);
 				}
@@ -174,7 +176,7 @@ describe('Bootstrap Container', () => {
 
 		it('should wrap non-AppError in ContainerCreationError', () => {
 			// Mock para lanzar un error genérico (no AppError)
-			vi.spyOn(Container.prototype, 'resolve').mockImplementation(function(this: any, token: string) {
+			vi.spyOn(Container.prototype, 'resolve').mockImplementation(function (this: any, token: string) {
 				if (token === 'Config') {
 					throw new Error('Generic error');
 				}
@@ -192,7 +194,7 @@ describe('Bootstrap Container', () => {
 		});
 
 		it('should include token name in error when service not registered', () => {
-			vi.spyOn(Container.prototype, 'isRegistered').mockImplementation(function(this: any, token: string) {
+			vi.spyOn(Container.prototype, 'isRegistered').mockImplementation(function (this: any, token: string) {
 				if (token === 'Logger') return false;
 				return true;
 			});

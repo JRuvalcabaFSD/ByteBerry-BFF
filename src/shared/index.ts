@@ -7,6 +7,7 @@ export * from './decorators/logger.decorators.js';
 export * from './errors/core.errors.js';
 export * from './errors/handler.errors.js';
 export * from './errors/http.errors.js';
+export * from './errors/authenticated.errors.js';
 
 // Helpers
 export * from './helpers/functions.js';
