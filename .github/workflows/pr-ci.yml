@@ -301,6 +301,7 @@ jobs:
             -e PORT=4002 \
             -e LOG_LEVEL=info \
             -e DATABASE_URL=postgresql://test_user:test_password@localhost:5433/bff_test?schema=public \
+            -e BFF_CLIENT_SECRET="DMP0m0rWlIGzcv0mLMoZBjGbFfu4BV7K2IVRixYpIIc=" \
             -e RUN_MIGRATIONS=true \
             -e JWT_PRIVATE_KEY=dummy \
             -e JWT_PUBLIC_KEY=dummy \
