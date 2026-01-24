@@ -1,6 +1,6 @@
 {
 	"name": "bff",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Backend for Frontend que orquesta OAuth2 y Expenses API",
 	"main": "dist/app.js",
 	"type": "module",
