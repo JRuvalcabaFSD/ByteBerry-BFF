@@ -184,12 +184,15 @@ export class JwtVerifierAdapter implements IJwtVerifier {
 	@LogContextMethod()
 	private decodeWithoutVerification(token: string): IJwtPayload {
 		try {
-			return this.decodeWithoutVerification(token);
+			const decoded = jwt.decode(token);
+			if (!decoded || typeof decoded !== 'object') {
+				throw new Error('Invalid token');
+			}
+			return decoded as IJwtPayload;
 		} catch (error) {
 			this.logger.error('Failed to decode token', {
 				error: error instanceof Error ? error.message : 'Unknown error',
 			});
-
 			throw new AuthenticatedError('Invalid token format', 'INVALID_TOKEN_FORMAT');
 		}
 	}

@@ -5,4 +5,3 @@ export * from './dtos/user.dto.js';
 export * from './use-cases/getCurrentUser.use-case.js';
 
 //Validate schemas
-export * from './validate-schemas/helpers.js';
