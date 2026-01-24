@@ -23,9 +23,12 @@ declare module '@ServiceMap' {
 export interface IJwtPayload {
 	iss: string;
 	sub: string;
-	aud: string;
+	aud: string | string[];
 	exp: number;
 	iat: number;
+	email: string;
+	username: string;
+	roles: string[];
 	client_id: string;
 	scope?: string | undefined;
 	kid?: string;
