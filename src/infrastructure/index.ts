@@ -23,3 +23,4 @@ export * from './services/health-register.service.js';
 export * from './services/health.service.js';
 export * from './services/uuid.service.js';
 export * from './services/winston-logger.service.js';
+export * from './services/inMemory-session-manager.service.js';

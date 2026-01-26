@@ -12,7 +12,10 @@
 		"coverage": true,
 		"logs": true
 	},
-	"cSpell.words": ["SSSZ"],
+	"cSpell.words": [
+		"IPKCE",
+		"SSSZ"
+	],
 	"files.associations": {
 		"*.css": "tailwindcss"
 	}

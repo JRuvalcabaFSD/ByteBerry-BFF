@@ -18,6 +18,8 @@ export * from './services/clock.service.interface.js';
 export * from './services/logger.service.interface.js';
 export * from './services/health.service.interface.js';
 export * from './services/uuid.service.interface.js';
+export * from './services/session-manager.service.interface.js';
+export * from './services/pkce.state-manager.service.interface.js';
 
 //Use cases
 export * from './uses-cases/user.use-case.interface.js';
