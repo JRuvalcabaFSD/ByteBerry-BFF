@@ -52,6 +52,8 @@ export interface IConfig extends HealthCheckable {
 	readonly bffClientId: string;
 	readonly bffClientSecret: string;
 	readonly oauth2ServiceUrl: string;
+	readonly bffClientRedirectUris: string[];
+	readonly pkceStateTtl: number;
 
 	// JWT
 	readonly jwtIssuer: string;
@@ -65,6 +67,17 @@ export interface IConfig extends HealthCheckable {
 	// Http Client
 	readonly httpMaxRetries: number;
 	readonly httpRetryDelay: number;
+
+	//Session
+	readonly sessionCookieName: string;
+	readonly sessionSecret: string;
+	readonly sessionMaxAge: number;
+
+	//Cookies
+	readonly cookieSecure: boolean;
+	readonly cookieHttpOnly: boolean;
+	readonly cookieSameSite: boolean;
+	readonly cookieDomain: string;
 
 	//Functions.
 	isDevelopment(): boolean;

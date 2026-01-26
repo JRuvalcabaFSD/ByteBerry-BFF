@@ -17,25 +17,38 @@ export class Config implements IConfig {
 	public readonly logRequests: boolean;
 
 	//Security environments
-	readonly corsOrigins: string[];
+	public readonly corsOrigins: string[];
 
 	//OAuth2 environments
-	readonly bffClientId: string;
-	readonly bffClientSecret: string;
-	readonly oauth2ServiceUrl: string;
+	public readonly bffClientId: string;
+	public readonly bffClientSecret: string;
+	public readonly oauth2ServiceUrl: string;
+	public readonly bffClientRedirectUris: string[];
+	public readonly pkceStateTtl: number;
 
 	// Http Client environments
-	readonly httpMaxRetries: number;
-	readonly httpRetryDelay: number;
+	public readonly httpMaxRetries: number;
+	public readonly httpRetryDelay: number;
 
 	// JWT environments
-	readonly jwtIssuer: string;
-	readonly jwtAudience: string;
-	readonly jwksUrl: string;
+	public readonly jwtIssuer: string;
+	public readonly jwtAudience: string;
+	public readonly jwksUrl: string;
 
 	// JWKS environments
-	readonly jwksCacheTtl: number;
-	readonly jwksCacheMaxAge: number;
+	public readonly jwksCacheTtl: number;
+	public readonly jwksCacheMaxAge: number;
+
+	//Session environments
+	public readonly sessionCookieName: string;
+	public readonly sessionSecret: string;
+	public readonly sessionMaxAge: number;
+
+	//Cookies environments
+	public readonly cookieSecure: boolean;
+	public readonly cookieHttpOnly: boolean;
+	public readonly cookieSameSite: boolean;
+	public readonly cookieDomain: string;
 
 	constructor() {
 		try {
@@ -65,7 +78,11 @@ export class Config implements IConfig {
 			// ========================================
 			this.bffClientId = env.get('BFF_CLIENT_ID').default('byteberry-bff-client').asString();
 			this.bffClientSecret = env.get('BFF_CLIENT_SECRET').required().asString();
+			this.bffClientRedirectUris = this.normalizeUrls(
+				env.get('BFF_CLIENT_REDIRECT_URIS').default('http://localhost:4003/auth/callback,http://localhost:5173/auth/callback').asArray(',')
+			);
 			this.oauth2ServiceUrl = this.normalizeUrls(env.get('OAUTH2_SERVICE_URL').default('http://oauth2-service:4000').asUrlString());
+			this.pkceStateTtl = env.get('PKCE_STATE_TTL').default('600').asIntPositive();
 
 			// ========================================
 			// Http client environments
@@ -87,6 +104,21 @@ export class Config implements IConfig {
 			this.jwksCacheTtl = env.get('JWKS_CACHE_TTL').default('3600').asIntPositive();
 			this.jwksCacheMaxAge = env.get('JWKS_CACHE_MAX_AGE').default('86400').asIntPositive();
 			this.jwksUrl = this.normalizeUrls(env.get('JWKS_URL').default('http://localhost:4000/auth/.well-known/jwks.json').asUrlString());
+
+			// ========================================
+			// Session environments
+			// ========================================
+			this.sessionCookieName = env.get('SESSION_COOKIE_NAME').default('byteberry_session').asString();
+			this.sessionMaxAge = env.get('SESSION_MAX_AGE').default('604800000').asIntPositive();
+			this.sessionSecret = env.get('SESSION_SECRET').required().asString();
+
+			// ========================================
+			// Cookies environments
+			// ========================================
+			this.cookieDomain = this.normalizeUrls(env.get('COOKIE_DOMAIN').default('localhost').asString());
+			this.cookieHttpOnly = env.get('COOKIE_HTTP_ONLY').default('true').asBool();
+			this.cookieSameSite = env.get('COOKIE_SAME_SITE').default('lax').asBool();
+			this.cookieSecure = env.get('COOKIE_SECURE').default('false').asBool();
 		} catch (error) {
 			throw new ConfigError(`Failed to validate environment variables ${getErrMessage(error)}}`, this.generateContext());
 		}
