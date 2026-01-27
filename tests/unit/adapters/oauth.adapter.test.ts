@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { IConfig, ILogger, AuthorizationUrlParams, TokenResponse, TokenValidationResponse } from '@interfaces';
-import { OAuthClientAdapter } from '@infrastructure';
+import { OAuthClient } from '@infrastructure';
 
 // Mock fetch globally
 const fetchMock = vi.fn();
@@ -11,10 +11,10 @@ vi.mock('node:timers', () => ({
 	setTimeout: vi.fn(),
 }));
 
-describe('OAuthClientAdapter', () => {
+describe('HttpClient', () => {
 	let config: IConfig;
 	let logger: ILogger;
-	let adapter: OAuthClientAdapter;
+	let adapter: OAuthClient;
 
 	beforeEach(() => {
 		config = {
@@ -31,7 +31,7 @@ describe('OAuthClientAdapter', () => {
 			error: vi.fn(),
 		} as unknown as ILogger;
 
-		adapter = new OAuthClientAdapter(config, logger);
+		adapter = new OAuthClient(config, logger);
 		vi.clearAllMocks();
 	});
 
@@ -53,7 +53,7 @@ describe('OAuthClientAdapter', () => {
 			const url = adapter.getAuthorizationUrl(params);
 
 			expect(url).toBe('https://oauth.example.com/authorize?response_type=code&client_id=client-id&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&scope=read+write&state=state123&code_challenge=challenge&code_challenge_method=S256');
-			expect(logger.debug).toHaveBeenCalledWith('[OAuthClientAdapter.getAuthorizationUrl] Generated authorization URL', {
+			expect(logger.debug).toHaveBeenCalledWith('[HttpClient.getAuthorizationUrl] Generated authorization URL', {
 				clientId: 'client-id',
 				scope: 'read write',
 				method: 'S256',
@@ -84,7 +84,7 @@ describe('OAuthClientAdapter', () => {
 				signal: expect.any(AbortSignal),
 			});
 			expect(result).toEqual(mockResponse);
-			expect(logger.debug).toHaveBeenCalledWith('[OAuthClientAdapter.exchangeCodeForToken] Exchanging code for token', { clientId: 'test-client-id', redirectUri: 'https://example.com/callback' });
+			expect(logger.debug).toHaveBeenCalledWith('[HttpClient.exchangeCodeForToken] Exchanging code for token', { clientId: 'test-client-id', redirectUri: 'https://example.com/callback' });
 		});
 
 		it('should handle fetch failure and retry', async () => {
@@ -115,7 +115,7 @@ describe('OAuthClientAdapter', () => {
 				valid: true,
 				payload: { message: 'Token validation happens via JWKS verification' },
 			});
-			expect(logger.debug).toHaveBeenCalledWith('[OAuthClientAdapter.validateToken] Token validation requested (using JWKS verification)');
+			expect(logger.debug).toHaveBeenCalledWith('[HttpClient.validateToken] Token validation requested (using JWKS verification)');
 		});
 
 		it('should handle errors and return invalid response', async () => {
@@ -144,7 +144,7 @@ describe('OAuthClientAdapter', () => {
 				signal: expect.any(AbortSignal),
 			});
 			expect(result).toEqual(mockResponse);
-			expect(logger.info).toHaveBeenCalledWith('[OAuthClientAdapter.refreshToken] Refreshing access token', { clientId: 'test-client-id' });
+			expect(logger.info).toHaveBeenCalledWith('[HttpClient.refreshToken] Refreshing access token', { clientId: 'test-client-id' });
 		});
 	});
 
@@ -166,8 +166,8 @@ describe('OAuthClientAdapter', () => {
 				body: expect.stringContaining('token=token123&client_id=test-client-id&token_type_hint=access_token'),
 				signal: expect.any(AbortSignal),
 			});
-			expect(logger.info).toHaveBeenCalledWith('[OAuthClientAdapter.revokeToken] Revoking token', { clientId: 'test-client-id', tokenTypeHint: 'access_token' });
-			expect(logger.info).toHaveBeenCalledWith('[OAuthClientAdapter.revokeToken] Token revoked successfully');
+			expect(logger.info).toHaveBeenCalledWith('[HttpClient.revokeToken] Revoking token', { clientId: 'test-client-id', tokenTypeHint: 'access_token' });
+			expect(logger.info).toHaveBeenCalledWith('[HttpClient.revokeToken] Token revoked successfully');
 		});
 
 		it('should log warning on revocation failure but not throw', async () => {
@@ -175,7 +175,7 @@ describe('OAuthClientAdapter', () => {
 
 			await expect(adapter.revokeToken('token123')).resolves.toBeUndefined();
 
-			expect(logger.warn).toHaveBeenCalledWith('[OAuthClientAdapter.revokeToken] Token revocation failed', { error: 'Token revocation failed after 3 attempts: Revoke failed' });
+			expect(logger.warn).toHaveBeenCalledWith('[HttpClient.revokeToken] Token revocation failed', { error: 'Token revocation failed after 3 attempts: Revoke failed' });
 		});
 	});
 });

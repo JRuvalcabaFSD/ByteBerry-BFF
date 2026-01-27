@@ -1,7 +1,7 @@
 //TODO documentar
 declare module '@ServiceMap' {
 	interface ServiceMap {
-		JwtVerifier: IJwtVerifier;
+		JwtVerifierClient: IJwtVerifierClient;
 	}
 }
 
@@ -37,7 +37,7 @@ export interface IJwtPayload {
 /**
  * Interface for JWT verification services.
  */
-export interface IJwtVerifier {
+export interface IJwtVerifierClient {
 	/**
 	 * Verifies a JWT token and returns the payload if valid.
 	 * @param token - The JWT token to verify.

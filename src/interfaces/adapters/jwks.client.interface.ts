@@ -1,7 +1,7 @@
 //TODO documentar
 declare module '@ServiceMap' {
 	interface ServiceMap {
-		JwksClientAdapter: IJwksClientAdapter;
+		JwksClient: IJwksClient;
 	}
 }
 
@@ -36,7 +36,7 @@ export interface JWKSResponse {
  * Provides methods to retrieve public keys, convert JWKs to PEM format, and manage caching.
  */
 
-export interface IJwksClientAdapter {
+export interface IJwksClient {
 	/**
 	 * Retrieves the public key associated with the specified key ID (kid).
 	 * @param kid - The key ID of the public key to retrieve.

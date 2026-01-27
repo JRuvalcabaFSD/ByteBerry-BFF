@@ -2,7 +2,7 @@
 //TODO documentar
 declare module '@ServiceMap' {
 	interface ServiceMap {
-		AuthClient: IAuthClient;
+		OAuthClient: IOAuthClient;
 	}
 }
 
@@ -65,7 +65,7 @@ export interface TokenValidationResponse {
  * validating tokens, refreshing tokens, and revoking tokens.
  */
 
-export interface IAuthClient {
+export interface IOAuthClient {
 	/**
 	 * Generates the authorization URL for initiating the OAuth2 flow.
 	 * @param params - The parameters required to build the authorization URL.

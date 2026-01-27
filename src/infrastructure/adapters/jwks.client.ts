@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import type { IConfig, IJwksClientAdapter, ILogger, JWK, JWKSResponse } from '@interfaces';
+import type { IConfig, IJwksClient, ILogger, JWK, JWKSResponse } from '@interfaces';
 import { AuthenticatedError, getErrMessage, Injectable, LogContextClass, LogContextMethod } from '@shared';
 
 /**
@@ -21,8 +21,8 @@ import { AuthenticatedError, getErrMessage, Injectable, LogContextClass, LogCont
  */
 
 @LogContextClass()
-@Injectable({ name: 'JwksClientAdapter', depends: ['Config', 'Logger'] })
-export class JwksAdapter implements IJwksClientAdapter {
+@Injectable({ name: 'JwksClient', depends: ['Config', 'Logger'] })
+export class JwksClient implements IJwksClient {
 	private cache: Map<string, string> = new Map();
 	private cacheTimestamp: number = 0;
 	private readonly CACHE_TTL: number;

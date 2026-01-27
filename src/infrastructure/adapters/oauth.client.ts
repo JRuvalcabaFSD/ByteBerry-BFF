@@ -1,12 +1,5 @@
-import type { AuthorizationUrlParams, IAuthClient, IConfig, ILogger, TokenResponse, TokenValidationResponse } from '@interfaces';
+import type { AuthorizationUrlParams, IOAuthClient, IConfig, ILogger, TokenResponse, TokenValidationResponse } from '@interfaces';
 import { Injectable, LogContextClass, LogContextMethod } from '@shared';
-
-//TODO documentar
-declare module '@ServiceMap' {
-	interface ServiceMap {
-		OAuthClientAdapter: OAuthClientAdapter;
-	}
-}
 
 /**
  * OAuth2 client implementation for handling authentication flows.
@@ -14,12 +7,12 @@ declare module '@ServiceMap' {
  * validate tokens, refresh tokens, and revoke tokens. It includes retry logic with exponential backoff
  * for resilient HTTP requests to the OAuth2 service.
  *
- * @implements {IAuthClient}
+ * @implements {IOAuthClient}
  */
 
 @LogContextClass()
-@Injectable({ name: 'OAuthClientAdapter', depends: ['Config', 'Logger'] })
-export class OAuthClientAdapter implements IAuthClient {
+@Injectable({ name: 'OAuthClient', depends: ['Config', 'Logger'] })
+export class OAuthClient implements IOAuthClient {
 	private readonly maxRetries: number;
 	private readonly retryDelayMs: number;
 	private readonly oauth2ServiceUrl: string;
@@ -44,7 +37,7 @@ export class OAuthClientAdapter implements IAuthClient {
 
 	@LogContextMethod()
 	public getAuthorizationUrl(params: AuthorizationUrlParams): string {
-		const url = new URL('/authorize', this.oauth2ServiceUrl);
+		const url = new URL('/auth/authorize', this.oauth2ServiceUrl);
 
 		url.searchParams.append('response_type', 'code');
 		url.searchParams.append('client_id', params.clientId);
@@ -74,7 +67,7 @@ export class OAuthClientAdapter implements IAuthClient {
 
 	@LogContextMethod()
 	public async exchangeCodeForToken(code: string, codeVerifier: string, redirectUri: string): Promise<TokenResponse> {
-		const url = `${this.getAuthorizationUrl}/token`;
+		const url = `${this.oauth2ServiceUrl}/auth/token`;
 
 		const body = new URLSearchParams({
 			grant_type: 'authorization_code',
@@ -136,7 +129,7 @@ export class OAuthClientAdapter implements IAuthClient {
 
 	@LogContextMethod()
 	public async refreshToken(refreshToken: string): Promise<TokenResponse> {
-		const url = `${this.oauth2ServiceUrl}/token`;
+		const url = `${this.oauth2ServiceUrl}/auth/token`;
 
 		const body = new URLSearchParams({
 			grant_type: 'refresh_token',

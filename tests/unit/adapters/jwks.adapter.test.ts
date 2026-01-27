@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import crypto from 'crypto';
 import type { IConfig, ILogger, JWK, JWKSResponse } from '@interfaces';
 import { AuthenticatedError } from '@shared';
-import { JwksAdapter } from '@infrastructure';
+import { JwksClient } from '@infrastructure';
 
 // Mock fetch globally
 const fetchMock = vi.fn();
@@ -15,7 +15,7 @@ crypto.createPublicKey = createPublicKeyMock;
 describe('JwksAdapter', () => {
 	let mockConfig: IConfig;
 	let mockLogger: ILogger;
-	let adapter: JwksAdapter;
+	let adapter: JwksClient;
 
 	beforeEach(() => {
 		mockConfig = {
@@ -32,7 +32,7 @@ describe('JwksAdapter', () => {
 			warn: vi.fn(),
 		} as unknown as ILogger;
 
-		adapter = new JwksAdapter(mockConfig, mockLogger);
+		adapter = new JwksClient(mockConfig, mockLogger);
 
 		// Reset mocks
 		fetchMock.mockClear();

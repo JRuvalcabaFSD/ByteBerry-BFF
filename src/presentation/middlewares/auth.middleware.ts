@@ -1,6 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 
-import { IJwtVerifier, ILogger } from '@interfaces';
+import { IJwtVerifierClient, ILogger } from '@interfaces';
 import { AuthenticatedError, withLoggerContext } from '@shared';
 
 const BEARER_PREFIX = 'Bearer ';
@@ -19,7 +19,7 @@ const TOKEN_PATTERN = /^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/;
  * @returns An Express RequestHandler middleware function.
  */
 
-export function createAuthMiddleware(jwtVerifier: IJwtVerifier, logger: ILogger): RequestHandler {
+export function createAuthMiddleware(jwtVerifier: IJwtVerifierClient, logger: ILogger): RequestHandler {
 	return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 		const ctxLogger = withLoggerContext(logger, 'createAuthMiddleware');
 		const requestId = req.requestId || 'unknown';

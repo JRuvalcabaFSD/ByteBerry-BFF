@@ -1,7 +1,7 @@
 // Adapters
-export * from './adapters/OAuth-adapter.interface.js';
-export * from './adapters/jwks.adapter.interface.js';
-export * from './adapters/jwt-verifier.interface.js';
+export * from './adapters/oauth.client.interface.js';
+export * from './adapters/jwks.client.interface.js';
+export * from './adapters/jwt-verifier.client.interface.js';
 
 //Config
 export * from './config/env.config.interface.js';
@@ -23,3 +23,4 @@ export * from './services/pkce.state-manager.service.interface.js';
 
 //Use cases
 export * from './uses-cases/user.use-case.interface.js';
+export * from './uses-cases/auth.use-case.interface.js';

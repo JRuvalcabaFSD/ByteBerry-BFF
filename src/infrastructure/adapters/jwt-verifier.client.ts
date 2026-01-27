@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-import type { IConfig, IJwksClientAdapter, IJwtPayload, IJwtVerifier, ILogger } from '@interfaces';
+import type { IConfig, IJwksClient, IJwtPayload, IJwtVerifierClient, ILogger } from '@interfaces';
 import { AuthenticatedError, Injectable, LogContextClass, LogContextMethod } from '@shared';
 
 /**
@@ -9,18 +9,18 @@ import { AuthenticatedError, Injectable, LogContextClass, LogContextMethod } fro
  * expected issuer and audience, fetching public keys from a JWKS client, and logging relevant events.
  * It supports RS256 algorithm and includes audience validation for both string and array audiences.
  *
- * @implements {IJwtVerifier}
+ * @implements {IJwtVerifierClient}
  */
 
 @LogContextClass()
-@Injectable({ name: 'JwtVerifier', depends: ['Config', 'JwksClientAdapter', 'Logger'] })
-export class JwtVerifierAdapter implements IJwtVerifier {
+@Injectable({ name: 'JwtVerifierClient', depends: ['Config', 'JwksClient', 'Logger'] })
+export class JwtVerifierClient implements IJwtVerifierClient {
 	private readonly expectedIssuer: string;
 	private readonly expectedAudience: string;
 
 	constructor(
 		config: IConfig,
-		private readonly jwksClient: IJwksClientAdapter,
+		private readonly jwksClient: IJwksClient,
 		private readonly logger: ILogger
 	) {
 		this.expectedIssuer = config.jwtIssuer;

@@ -1,11 +1,13 @@
 import { Router, Request, Response } from 'express';
 
 import { Injectable } from '@shared';
-import type { HomeResponse, IClock, IConfig, IHealthService, IJwtVerifier, ILogger } from '@interfaces';
+import type { HomeResponse, IClock, IConfig, IHealthService, IJwtVerifierClient, ILogger } from '@interfaces';
 import { createHealthRoutes } from './health.routes.js';
 import { createMeRoutes } from './me.routes.js';
 import { MeController } from '../controllers/me.controller.js';
 import { createAuthMiddleware } from '../middlewares/auth.middleware.js';
+import { AuthController } from '../controllers/auth.controller.js';
+import { createAuthRoutes } from './auth.routes.js';
 
 /**
  * Extends the global ServiceMap interface to include the IConfig interface.
@@ -21,7 +23,10 @@ declare module '@ServiceMap' {
 }
 
 //TODO documentar
-@Injectable({ name: 'AppRouter', depends: ['Config', 'Clock', 'HealthService', 'Logger', 'JwtVerifier', 'MeController'] })
+@Injectable({
+	name: 'AppRouter',
+	depends: ['Config', 'Clock', 'HealthService', 'Logger', 'JwtVerifierClient', 'MeController', 'AuthController'],
+})
 export class AppRouter {
 	private readonly router: Router;
 
@@ -30,8 +35,9 @@ export class AppRouter {
 		private readonly clock: IClock,
 		private readonly heathService: IHealthService,
 		private readonly logger: ILogger,
-		private readonly jwtVerifier: IJwtVerifier,
-		private readonly meCtl: MeController
+		private readonly jwtVerifier: IJwtVerifierClient,
+		private readonly meCtl: MeController,
+		private readonly authCtl: AuthController
 	) {
 		this.router = Router();
 		this.setupRoutes();
@@ -60,6 +66,9 @@ export class AppRouter {
 		const baseurl = `${this.config.serviceUrl}:${this.config.port}`;
 
 		const requireAuth = createAuthMiddleware(this.jwtVerifier, this.logger);
+
+		//Auth
+		this.router.use('/auth', createAuthRoutes(this.authCtl));
 
 		//Me
 		this.router.use('/api/user', requireAuth, createMeRoutes(this.meCtl));
@@ -106,16 +115,9 @@ export class AppRouter {
 			{ name: 'deepHealth', value: `${baseUrl}/health/deep`, method: 'GET' },
 			{ name: 'health', value: `${baseUrl}/health`, method: 'GET' },
 			{ name: 'me', value: `${baseUrl}/api/user/me`, method: 'GET' },
-			// { name: 'authorize', value: `${baseUrl}/auth/authorize`, method: 'GET' },
-			// { name: 'JWKS', value: `${baseUrl}/auth/.well-known/jwks.json`, method: 'GET' },
-			// { name: 'login', value: `${baseUrl}/auth/login`, method: 'POST' },
-			// { name: 'login', value: `${baseUrl}/auth/login`, method: 'GET' },
-			// { name: 'token', value: `${baseUrl}/auth/token`, method: 'POST' },
-			// { name: 'user', value: `${baseUrl}/user/register`, method: 'POST' },
-			// { name: 'currentUser', value: `${baseUrl}/user/me`, method: 'GET' },
-			// { name: 'update', value: `${baseUrl}/user/me`, method: 'PUT' },
-			// { name: 'updatePassword', value: `${baseUrl}/user/me/password`, method: 'PUT' },
-			// { name: 'createClient', value: `${baseUrl}/client`, method: 'POST' },
+			{ name: 'login', value: `${baseUrl}/auth/login`, method: 'GET' },
+			{ name: 'callback', value: `${baseUrl}/auth/callback`, method: 'GET' },
+			{ name: 'logout', value: `${baseUrl}/auth/logout`, method: 'POST' },
 		];
 
 		return routes.reduce(

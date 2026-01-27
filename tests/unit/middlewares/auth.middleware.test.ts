@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Request, Response, NextFunction } from 'express';
-import { IJwtVerifier, ILogger } from '@interfaces';
+import { IJwtVerifierClient, ILogger } from '@interfaces';
 import { withLoggerContext } from '@shared';
 import { createAuthMiddleware } from '@presentation';
 
@@ -20,7 +20,7 @@ vi.mock('@shared', () => {
 });
 
 describe('createAuthMiddleware', () => {
-	let mockJwtVerifier: IJwtVerifier;
+	let mockJwtVerifier: IJwtVerifierClient;
 	let mockLogger: ILogger;
 	let mockCtxLogger: ILogger;
 	let req: Partial<Request>;
@@ -30,7 +30,7 @@ describe('createAuthMiddleware', () => {
 	beforeEach(() => {
 		mockJwtVerifier = {
 			verify: vi.fn(),
-		} as unknown as IJwtVerifier;
+		} as unknown as IJwtVerifierClient;
 		mockLogger = {
 			debug: vi.fn(),
 			info: vi.fn(),

@@ -1,7 +1,7 @@
 // Adapters
-export * from './adapters/oauth.adapter.js';
-export * from './adapters/jwks.adapter.js';
-export * from './adapters/jwt-verifier.adapter.js';
+export * from './adapters/oauth.client.js';
+export * from './adapters/jwks.client.js';
+export * from './adapters/jwt-verifier.client.js';
 
 //Http
 export * from './http/http.server.js';
@@ -24,3 +24,4 @@ export * from './services/health.service.js';
 export * from './services/uuid.service.js';
 export * from './services/winston-logger.service.js';
 export * from './services/inMemory-session-manager.service.js';
+export * from './services/inMemory-pkce-manager.service.js';

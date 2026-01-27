@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import type { IConfig, IJwksClientAdapter, IJwtPayload, ILogger } from '@interfaces';
+import type { IConfig, IJwksClient, IJwtPayload, ILogger } from '@interfaces';
 import { AuthenticatedError } from '@shared';
-import { JwtVerifierAdapter } from '@infrastructure';
+import { JwtVerifierClient } from '@infrastructure';
 
 // Mock dependencies
 const mockConfig = {
@@ -30,11 +30,11 @@ const mockLogger = {
 describe('JwtVerifierAdapter', () => {
 	const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 	const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' }) as string;
-	let jwtVerifier: JwtVerifierAdapter;
+	let jwtVerifier: JwtVerifierClient;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		jwtVerifier = new JwtVerifierAdapter(mockConfig, mockJwksClient, mockLogger);
+		jwtVerifier = new JwtVerifierClient(mockConfig, mockJwksClient, mockLogger);
 	});
 
 	describe('constructor', () => {

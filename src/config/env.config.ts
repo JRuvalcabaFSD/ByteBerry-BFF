@@ -23,7 +23,7 @@ export class Config implements IConfig {
 	public readonly bffClientId: string;
 	public readonly bffClientSecret: string;
 	public readonly oauth2ServiceUrl: string;
-	public readonly bffClientRedirectUris: string[];
+	public readonly bffClientRedirectUri: string;
 	public readonly pkceStateTtl: number;
 
 	// Http Client environments
@@ -47,7 +47,7 @@ export class Config implements IConfig {
 	//Cookies environments
 	public readonly cookieSecure: boolean;
 	public readonly cookieHttpOnly: boolean;
-	public readonly cookieSameSite: boolean;
+	public readonly cookieSameSite: 'strict' | 'lax' | 'none';
 	public readonly cookieDomain: string;
 
 	constructor() {
@@ -78,8 +78,8 @@ export class Config implements IConfig {
 			// ========================================
 			this.bffClientId = env.get('BFF_CLIENT_ID').default('byteberry-bff-client').asString();
 			this.bffClientSecret = env.get('BFF_CLIENT_SECRET').required().asString();
-			this.bffClientRedirectUris = this.normalizeUrls(
-				env.get('BFF_CLIENT_REDIRECT_URIS').default('http://localhost:4003/auth/callback,http://localhost:5173/auth/callback').asArray(',')
+			this.bffClientRedirectUri = this.normalizeUrls(
+				env.get('BFF_CLIENT_REDIRECT_URI').default('http://localhost:4003/auth/callback').asUrlString()
 			);
 			this.oauth2ServiceUrl = this.normalizeUrls(env.get('OAUTH2_SERVICE_URL').default('http://oauth2-service:4000').asUrlString());
 			this.pkceStateTtl = env.get('PKCE_STATE_TTL').default('600').asIntPositive();
@@ -115,9 +115,9 @@ export class Config implements IConfig {
 			// ========================================
 			// Cookies environments
 			// ========================================
-			this.cookieDomain = this.normalizeUrls(env.get('COOKIE_DOMAIN').default('localhost').asString());
+			this.cookieDomain = env.get('COOKIE_DOMAIN').default('localhost').asString();
 			this.cookieHttpOnly = env.get('COOKIE_HTTP_ONLY').default('true').asBool();
-			this.cookieSameSite = env.get('COOKIE_SAME_SITE').default('lax').asBool();
+			this.cookieSameSite = env.get('COOKIE_SAME_SITE').default('lax').asEnum(['strict', 'lax', 'none']);
 			this.cookieSecure = env.get('COOKIE_SECURE').default('false').asBool();
 		} catch (error) {
 			throw new ConfigError(`Failed to validate environment variables ${getErrMessage(error)}}`, this.generateContext());

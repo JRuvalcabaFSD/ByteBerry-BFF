@@ -14,7 +14,7 @@ import type { IClock, IConfig, ILogger, ISessionManager, IUuid, TokenData } from
  */
 
 @LogContextClass()
-@Injectable({ name: 'SessionManager', depends: ['Uuid', 'Clock', 'Logger'] })
+@Injectable({ name: 'SessionManager', depends: ['Config', 'Uuid', 'Clock', 'Logger'] })
 export class InMemorySessionManagerService implements ISessionManager {
 	private readonly sessions: Map<string, SessionData> = new Map();
 	private readonly sessionMaxAge: number;
@@ -61,6 +61,8 @@ export class InMemorySessionManagerService implements ISessionManager {
 			createdAt: now,
 			lastActivityAt: now,
 		};
+
+		console.log('debug', session);
 
 		this.sessions.set(sessionId, session);
 

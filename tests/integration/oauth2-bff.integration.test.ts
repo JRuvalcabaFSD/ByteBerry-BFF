@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import express, { Express } from 'express';
 import { Server } from 'http';
 import type { IConfig, ILogger, IJwtPayload, JWKSResponse } from '@interfaces';
-import { JwksAdapter, JwtVerifierAdapter } from '@infrastructure';
+import { JwksClient, JwtVerifierClient } from '@infrastructure';
 import { createAuthMiddleware } from '@presentation';
 import { GetCurrentUserUseCase } from '@application';
 import { MeController } from '../../src/presentation/controllers/me.controller';
@@ -99,7 +99,7 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should fetch JWKS from OAuth2 service successfully', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
+			const jwksAdapter = new JwksClient(config, logger);
 
 			const publicKey = await jwksAdapter.getPublicKey('integration-test-key-1');
 
@@ -135,7 +135,7 @@ describe('OAuth2 BFF Integration Tests', () => {
 					jwksUrl: `http://localhost:${port}/.well-known/jwks.json`,
 				} as IConfig;
 				const logger = createMockLogger();
-				const jwksAdapter = new JwksAdapter(config, logger);
+				const jwksAdapter = new JwksClient(config, logger);
 
 				// Should be able to get both keys
 				const key1 = await jwksAdapter.getPublicKey('integration-test-key-1');
@@ -155,7 +155,7 @@ describe('OAuth2 BFF Integration Tests', () => {
 				jwksUrl: 'http://localhost:59999/.well-known/jwks.json', // Non-existent port
 			} as IConfig;
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
+			const jwksAdapter = new JwksClient(config, logger);
 
 			await expect(jwksAdapter.getPublicKey('test-key')).rejects.toThrow();
 		});
@@ -163,7 +163,7 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should throw error when key is not found in JWKS', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
+			const jwksAdapter = new JwksClient(config, logger);
 
 			await expect(jwksAdapter.getPublicKey('non-existent-key')).rejects.toThrow('Public key not found');
 		});
@@ -173,8 +173,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should verify a valid token successfully', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const token = tokenHelper.generateToken({});
 			const payload = await jwtVerifier.verify(token);
@@ -191,8 +191,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should verify token with array audience', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const token = tokenHelper.generateToken({
 				aud: ['bff-client', 'other-client'],
@@ -206,8 +206,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should verify token with multiple scopes', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const token = tokenHelper.generateToken({
 				scope: 'read write delete admin',
@@ -220,8 +220,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should verify token with multiple roles', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const token = tokenHelper.generateToken({
 				roles: ['user', 'admin', 'moderator'],
@@ -236,8 +236,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject expired token', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const expiredToken = tokenHelper.generateExpiredToken();
 
@@ -247,8 +247,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject token with invalid signature', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const invalidToken = tokenHelper.generateTokenWithInvalidSignature();
 
@@ -258,8 +258,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject token without kid in header', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const tokenWithoutKid = tokenHelper.generateTokenWithoutKid();
 
@@ -269,8 +269,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject token with wrong issuer', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const token = tokenHelper.generateToken({
 				iss: 'https://malicious-issuer.com',
@@ -282,8 +282,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject token with wrong audience', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const token = tokenHelper.generateToken({
 				aud: 'wrong-audience',
@@ -295,8 +295,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject malformed token', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			await expect(jwtVerifier.verify('not-a-valid-token')).rejects.toThrow();
 		});
@@ -304,8 +304,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject token with tampered payload', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			// Generate valid token and tamper with it
 			const validToken = tokenHelper.generateToken({});
@@ -324,8 +324,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should pass authenticated request to next handler', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const middleware = createAuthMiddleware(jwtVerifier, logger);
 			const token = tokenHelper.generateToken({});
@@ -349,8 +349,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject request without authorization header', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const middleware = createAuthMiddleware(jwtVerifier, logger);
 
@@ -371,8 +371,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject request with invalid Bearer token format', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const middleware = createAuthMiddleware(jwtVerifier, logger);
 
@@ -393,8 +393,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should reject request with expired token', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const middleware = createAuthMiddleware(jwtVerifier, logger);
 			const expiredToken = tokenHelper.generateExpiredToken();
@@ -416,8 +416,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should attach full payload to req.user on success', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 			const middleware = createAuthMiddleware(jwtVerifier, logger);
 			const token = tokenHelper.generateToken({
@@ -667,7 +667,7 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should use cached key on subsequent requests', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
+			const jwksAdapter = new JwksClient(config, logger);
 
 			// Reset fetch count
 			fetchCallCount = 0;
@@ -684,7 +684,7 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should fetch new JWKS after cache is cleared', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
+			const jwksAdapter = new JwksClient(config, logger);
 
 			// Reset fetch count
 			fetchCallCount = 0;
@@ -708,7 +708,7 @@ describe('OAuth2 BFF Integration Tests', () => {
 				jwksCacheTtl: 1, // 1 second TTL
 			} as IConfig;
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
+			const jwksAdapter = new JwksClient(config, logger);
 
 			// Reset fetch count
 			fetchCallCount = 0;
@@ -751,8 +751,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 					jwksUrl: `http://localhost:${port}/.well-known/jwks.json`,
 				} as IConfig;
 				const logger = createMockLogger();
-				const jwksAdapter = new JwksAdapter(config, logger);
-				const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+				const jwksAdapter = new JwksClient(config, logger);
+				const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 
 				// Should be able to verify tokens signed with both keys
 				const token1 = tokenHelper.generateToken({});
@@ -771,7 +771,7 @@ describe('OAuth2 BFF Integration Tests', () => {
 		it('should log appropriate messages during cache operations', async () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
-			const jwksAdapter = new JwksAdapter(config, logger);
+			const jwksAdapter = new JwksClient(config, logger);
 
 			// First request - cache miss
 			await jwksAdapter.getPublicKey('integration-test-key-1');
@@ -795,8 +795,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 			const logger = createMockLogger();
 
 			// Setup components
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 			const useCase = new GetCurrentUserUseCase(logger);
 			const controller = new MeController(useCase);
 			const authMiddleware = createAuthMiddleware(jwtVerifier, logger);
@@ -857,8 +857,8 @@ describe('OAuth2 BFF Integration Tests', () => {
 			const config = createTestConfig();
 			const logger = createMockLogger();
 
-			const jwksAdapter = new JwksAdapter(config, logger);
-			const jwtVerifier = new JwtVerifierAdapter(config, jwksAdapter, logger);
+			const jwksAdapter = new JwksClient(config, logger);
+			const jwtVerifier = new JwtVerifierClient(config, jwksAdapter, logger);
 			const authMiddleware = createAuthMiddleware(jwtVerifier, logger);
 
 			const expiredToken = tokenHelper.generateExpiredToken();

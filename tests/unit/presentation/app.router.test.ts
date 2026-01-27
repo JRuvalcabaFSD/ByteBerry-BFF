@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express, { Express } from 'express';
-import type { IConfig, IClock, IHealthService, ILogger, IJwtVerifier } from '@interfaces';
+import type { IConfig, IClock, IHealthService, ILogger, IJwtVerifierClient } from '@interfaces';
 import { AppRouter, MeController } from '@presentation';
 
 describe('AppRouter', () => {
@@ -10,7 +10,7 @@ describe('AppRouter', () => {
 	let mockClock: IClock;
 	let mockHealthService: IHealthService;
 	let mockLogger: ILogger;
-	let mockJwtVerifier: IJwtVerifier;
+	let mockJwtVerifier: IJwtVerifierClient;
 	let mockMeCtl: MeController;
 	let appRouter: AppRouter;
 
@@ -45,7 +45,7 @@ describe('AppRouter', () => {
 
 		mockJwtVerifier = {
 			verify: vi.fn(),
-		} as unknown as IJwtVerifier;
+		} as unknown as IJwtVerifierClient;
 
 		mockMeCtl = {
 			handle: vi.fn(async (req, res) => {
