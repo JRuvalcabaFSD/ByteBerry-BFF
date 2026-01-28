@@ -46,7 +46,7 @@ export class AuthController {
 		this.sessionCookieName = config.sessionCookieName;
 		this.cookieOptions = {
 			httpOnly: config.cookieHttpOnly,
-			secure: config.cookieSecure,
+			secure: config.isProduction(),
 			sameSite: config.cookieSameSite,
 			domain: config.cookieDomain,
 			maxAge: config.sessionMaxAge,
@@ -90,6 +90,9 @@ export class AuthController {
 
 			const result = await this.callbackUseCase.execute(query);
 
+			res.cookie(this.sessionCookieName, result.sessionId, this.cookieOptions);
+
+			// TODO Cambiar a rediredcción
 			res.redirect(result.redirectTo);
 		} catch (error) {
 			next(error);

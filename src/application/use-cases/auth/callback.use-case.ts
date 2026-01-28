@@ -49,7 +49,7 @@ export class CallbackUseCase implements ICallbackUseCase {
 		private readonly logger: ILogger
 	) {
 		this.redirectUri = config.bffClientRedirectUri;
-		this.frontendUrl = 'http://localhost:5173'; // TODO: Get from config
+		this.frontendUrl = config.frontendUrl;
 	}
 	/**
 	 * Handles the OAuth2 callback flow by validating the authorization response,
@@ -112,6 +112,7 @@ export class CallbackUseCase implements ICallbackUseCase {
 
 		return {
 			message: 'Authentication successful',
+			sessionId,
 			userId: payload.sub,
 			redirectTo: `${this.frontendUrl}/dashboard`,
 		};

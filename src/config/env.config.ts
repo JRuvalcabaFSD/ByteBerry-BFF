@@ -45,10 +45,12 @@ export class Config implements IConfig {
 	public readonly sessionMaxAge: number;
 
 	//Cookies environments
-	public readonly cookieSecure: boolean;
 	public readonly cookieHttpOnly: boolean;
 	public readonly cookieSameSite: 'strict' | 'lax' | 'none';
 	public readonly cookieDomain: string;
+
+	// Services environments
+	readonly frontendUrl: string;
 
 	constructor() {
 		try {
@@ -79,7 +81,7 @@ export class Config implements IConfig {
 			this.bffClientId = env.get('BFF_CLIENT_ID').default('byteberry-bff-client').asString();
 			this.bffClientSecret = env.get('BFF_CLIENT_SECRET').required().asString();
 			this.bffClientRedirectUri = this.normalizeUrls(
-				env.get('BFF_CLIENT_REDIRECT_URI').default('http://localhost:4003/auth/callback').asUrlString()
+				env.get('BFF_REDIRECT_URI').default('http://localhost:4002/auth/callback').asUrlString()
 			);
 			this.oauth2ServiceUrl = this.normalizeUrls(env.get('OAUTH2_SERVICE_URL').default('http://oauth2-service:4000').asUrlString());
 			this.pkceStateTtl = env.get('PKCE_STATE_TTL').default('600').asIntPositive();
@@ -118,7 +120,11 @@ export class Config implements IConfig {
 			this.cookieDomain = env.get('COOKIE_DOMAIN').default('localhost').asString();
 			this.cookieHttpOnly = env.get('COOKIE_HTTP_ONLY').default('true').asBool();
 			this.cookieSameSite = env.get('COOKIE_SAME_SITE').default('lax').asEnum(['strict', 'lax', 'none']);
-			this.cookieSecure = env.get('COOKIE_SECURE').default('false').asBool();
+
+			// ========================================
+			// Services environments
+			// ========================================
+			this.frontendUrl = this.normalizeUrls(env.get('FRONTEND_URL').default('http://localhost:5173').asUrlString());
 		} catch (error) {
 			throw new ConfigError(`Failed to validate environment variables ${getErrMessage(error)}}`, this.generateContext());
 		}

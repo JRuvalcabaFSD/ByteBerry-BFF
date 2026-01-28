@@ -26,13 +26,18 @@ export interface CallbackQuery {
 }
 
 /**
- * Represents the response returned after a successful authentication callback.
- * Contains a message, the authenticated user's ID, and the URL to redirect to.
+ * Represents the response returned from an authentication callback.
+ * @interface CallbackResponse
+ * @property {string} message - A message describing the result of the callback operation.
+ * @property {string} userId - The unique identifier of the authenticated user.
+ * @property {string} sessionId - The unique identifier for the user's session.
+ * @property {string} redirectTo - The URL path or endpoint to redirect the user to after authentication.
  */
 
 export interface CallbackResponse {
 	message: string;
 	userId: string;
+	sessionId: string;
 	redirectTo: string;
 }
 

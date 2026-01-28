@@ -74,10 +74,12 @@ export interface IConfig extends HealthCheckable {
 	readonly sessionMaxAge: number;
 
 	//Cookies
-	readonly cookieSecure: boolean;
 	readonly cookieHttpOnly: boolean;
 	readonly cookieSameSite: 'strict' | 'lax' | 'none';
 	readonly cookieDomain: string;
+
+	// Services
+	readonly frontendUrl: string;
 
 	//Functions.
 	isDevelopment(): boolean;
