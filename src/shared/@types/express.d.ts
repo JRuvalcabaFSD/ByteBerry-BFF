@@ -1,4 +1,4 @@
-import { ILogger } from '@interfaces';
+import { IJwtPayload, ILogger } from '@interfaces';
 
 declare global {
 	namespace Express {

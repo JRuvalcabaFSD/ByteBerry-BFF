@@ -1,44 +1,71 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
-
-import { IJwtVerifierClient, ILogger } from '@interfaces';
+import { IJwtVerifierClient, ILogger, ISessionManager } from '@interfaces';
 import { AuthenticatedError, withLoggerContext } from '@shared';
-
-const BEARER_PREFIX = 'Bearer ';
-const TOKEN_PATTERN = /^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/;
+import { NextFunction, Request, Response, RequestHandler } from 'express';
 
 /**
- * Creates an Express middleware function for JWT-based authentication.
+ * Creates an Express middleware for authenticating requests using session cookies and JWT verification.
  *
- * This middleware extracts the JWT token from the Authorization header,
- * verifies it using the provided JWT verifier, and attaches the decoded
- * payload to the request object as `req.user`. If verification fails,
- * it passes the error to the next middleware.
+ * This middleware extracts the session ID from a specified cookie, retrieves the session from the session manager,
+ * verifies the JWT access token, and attaches the authenticated user and session information to the request object.
+ * If authentication fails (e.g., session not found or expired), it throws an `AuthenticatedError`.
  *
- * @param jwtVerifier - The JWT verifier instance used to validate tokens.
- * @param logger - The logger instance for recording authentication events.
- * @returns An Express RequestHandler middleware function.
+ * @param sessionManager - The session manager responsible for retrieving and updating session information.
+ * @param jwtVerifier - The JWT verifier client used to decode and validate the access token.
+ * @param sessionCookieName - The name of the cookie containing the session ID.
+ * @param logger - Logger instance for logging authentication events and errors.
+ * @returns An Express request handler (middleware) that authenticates requests based on session cookies.
  */
 
-export function createAuthMiddleware(jwtVerifier: IJwtVerifierClient, logger: ILogger): RequestHandler {
+export function createAuthMiddleware(
+	sessionManager: ISessionManager,
+	jwtVerifier: IJwtVerifierClient,
+	sessionCookieName: string,
+	logger: ILogger
+): RequestHandler {
+	const ctxLogger = withLoggerContext(logger, 'createCookieAuthMiddleware');
+
 	return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-		const ctxLogger = withLoggerContext(logger, 'createAuthMiddleware');
 		const requestId = req.requestId || 'unknown';
 
 		try {
-			const authHeader = req.headers.authorization;
+			ctxLogger.debug('Processing cookie authentication', {
+				requestId,
+				path: req.path,
+				method: req.method,
+				hasCookie: !!req.cookies[sessionCookieName],
+			});
 
-			ctxLogger.debug('Processing authentication', { requestId, path: req.path, method: req.method, hasAuthHeader: !!authHeader });
+			const sessionId = getSessionIdFromCookie(req.cookies, sessionCookieName);
 
-			const token = getTokenFromHeader(authHeader);
-			const payload = await jwtVerifier.verify(token);
+			const session = sessionManager.getSession(sessionId);
+
+			if (!session) {
+				ctxLogger.warn('Session not found or expired', {
+					requestId,
+					sessionId,
+				});
+				throw new AuthenticatedError('Session not found or expired. Please login again.', 'Session expired');
+			}
+
+			sessionManager.touchSession(sessionId);
+
+			const payload = jwtVerifier.decode(session.accessToken);
 
 			req.user = payload;
 
+			req.session = {
+				sessionId: session.sessionId,
+				userId: session.userId,
+				accessToken: session.accessToken,
+				refreshToken: session.refreshToken ?? null,
+				tokenType: session.tokenType,
+				expiresAt: session.expiresAt,
+			};
+
 			ctxLogger.debug('Request authenticated successfully', {
 				requestId,
-				userId: payload.sub,
-				clientId: payload.client_id,
-				scope: payload.scope,
+				sessionId,
+				userId: session.userId,
 			});
 
 			next();
@@ -49,23 +76,23 @@ export function createAuthMiddleware(jwtVerifier: IJwtVerifierClient, logger: IL
 }
 
 /**
- * Extracts and validates a Bearer token from the authorization header.
+ * Retrieves the session ID from the provided cookies object using the specified cookie name.
  *
- * @param authHeader - The authorization header string, expected to start with "Bearer " followed by the token.
- * @returns The extracted and validated token string.
- * @throws {AuthenticatedError} If the auth header is missing, does not start with "Bearer ", the token is empty, or does not match the expected format.
+ * Throws an `AuthenticatedError` if the session cookie is missing or invalid.
+ *
+ * @param cookies - An object containing cookie key-value pairs.
+ * @param cookieName - The name of the cookie to retrieve the session ID from.
+ * @returns The session ID as a string.
+ * @throws AuthenticatedError If the session cookie is missing or has an invalid format.
  */
 
-function getTokenFromHeader(authHeader: string | undefined): string {
-	if (!authHeader) throw AuthenticatedError.missingAuthHeader();
-	if (!authHeader.startsWith(BEARER_PREFIX)) throw AuthenticatedError.missingAuthHeader();
+function getSessionIdFromCookie(cookies: Record<string, string>, cookieName: string): string {
+	const sessionId = cookies[cookieName];
 
-	const token = authHeader.substring(BEARER_PREFIX.length).trim();
+	if (!sessionId) throw new AuthenticatedError('No session cookie found. Please login.', 'Missing Session cookie');
 
-	if (!token) throw new AuthenticatedError('Empty token in authorization header');
+	if (typeof sessionId !== 'string' || sessionId.length === 0)
+		throw new AuthenticatedError('Invalid session cookie format', 'Invalid session cookie');
 
-	if (!token || typeof token !== 'string') throw AuthenticatedError.invalidTokenFormat();
-	if (!TOKEN_PATTERN.test(token)) throw AuthenticatedError.invalidTokenFormat();
-
-	return token;
+	return sessionId;
 }

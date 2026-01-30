@@ -2,13 +2,7 @@ import { Router, Request, Response } from 'express';
 
 import { Injectable } from '@shared';
 import type { HomeResponse, IClock, IConfig, IHealthService, IJwtVerifierClient, ILogger, ISessionManager } from '@interfaces';
-import { createHealthRoutes } from './health.routes.js';
-import { createMeRoutes } from './me.routes.js';
-import { MeController } from '../controllers/me.controller.js';
-import { createAuthMiddleware } from '../middlewares/auth.middleware.js';
-import { AuthController } from '../controllers/auth.controller.js';
-import { createAuthRoutes } from './auth.routes.js';
-import { createCookieAuthMiddleware } from '../middlewares/session.middleware.js';
+import { AuthController, createAuthMiddleware, createAuthRoutes, createHealthRoutes, createMeRoutes, MeController } from '@presentation';
 
 /**
  * Extends the global ServiceMap interface to include the IConfig interface.
@@ -26,7 +20,7 @@ declare module '@ServiceMap' {
 //TODO documentar
 @Injectable({
 	name: 'AppRouter',
-	depends: ['Config', 'Clock', 'HealthService', 'Logger', 'JwtVerifierClient', 'MeController', 'AuthController'],
+	depends: ['Config', 'Clock', 'HealthService', 'Logger', 'JwtVerifierClient', 'SessionManager', 'MeController', 'AuthController'],
 })
 export class AppRouter {
 	private readonly router: Router;
@@ -67,8 +61,7 @@ export class AppRouter {
 	private setupRoutes(): void {
 		const baseurl = `${this.config.serviceUrl}:${this.config.port}`;
 
-		const requireAuth = createAuthMiddleware(this.jwtVerifier, this.logger);
-		const _requireSession = createCookieAuthMiddleware(this.sessionManager, this.config.sessionCookieName, this.logger);
+		const requireAuth = createAuthMiddleware(this.sessionManager, this.jwtVerifier, this.config.sessionCookieName, this.logger);
 
 		//Auth
 		this.router.use('/auth', createAuthRoutes(this.authCtl));

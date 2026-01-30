@@ -19,7 +19,7 @@ export class MeController {
 			const payload = req.user;
 			const requestId = req.requestId;
 
-			const response = await this.currentUserUseCase.execute(payload, requestId!);
+			const response = await this.currentUserUseCase.execute(payload!, requestId!);
 			res.status(200).json(response.toJSON());
 		} catch (error) {
 			next(error);
