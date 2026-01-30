@@ -2,6 +2,7 @@
 export * from './adapters/oauth.client.interface.js';
 export * from './adapters/jwks.client.interface.js';
 export * from './adapters/jwt-verifier.client.interface.js';
+export * from './adapters/user.client.interface.js';
 
 //Config
 export * from './config/env.config.interface.js';

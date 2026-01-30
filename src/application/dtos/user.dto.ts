@@ -45,6 +45,97 @@ interface MeResponse {
 }
 
 /**
+ * Represents a user registration request.
+ * @interface RegisterUserRequest
+ * @property {string} email - The email address of the user.
+ * @property {string} username - The username for the account.
+ * @property {string} password - The password for the account.
+ * @property {string} confirmPassword - Confirmation of the password for validation purposes.
+ */
+
+export interface RegisterUserRequest {
+	email: string;
+	username: string;
+	password: string;
+	confirmPassword: string;
+}
+
+/**
+ * Represents the response returned after a user registration attempt.
+ *
+ * @property message - A descriptive message about the registration result.
+ * @property userId - The unique identifier assigned to the newly registered user.
+ * @property email - The email address associated with the registered user.
+ * @property username - The username chosen by the registered user.
+ * @property timestamp - The ISO timestamp indicating when the registration occurred.
+ */
+
+export interface RegisterUserResponse {
+	message: string;
+	userId: string;
+	email: string;
+	username: string;
+	timestamp: string;
+}
+
+/**
+ * Represents a request to update a user's profile information.
+ * All fields are optional; only provided fields will be updated.
+ *
+ * @property {string} [username] - The new username for the user.
+ * @property {string} [email] - The new email address for the user.
+ */
+
+export interface UpdateUserProfileRequest {
+	username?: string;
+	email?: string;
+}
+
+/**
+ * Represents the response returned after updating a user's profile.
+ *
+ * @property {string} message - A message describing the result of the update operation.
+ * @property {string} userId - The unique identifier of the updated user.
+ * @property {string} email - The updated email address of the user.
+ * @property {string} username - The updated username of the user.
+ * @property {string} timestamp - The ISO timestamp when the update occurred.
+ */
+
+export interface UpdateUserProfileResponse {
+	message: string;
+	userId: string;
+	email: string;
+	username: string;
+	timestamp: string;
+}
+
+/**
+ * Represents a request to change a user's password.
+ *
+ * @property currentPassword - The user's current password.
+ * @property newPassword - The new password the user wants to set.
+ * @property confirmPassword - Confirmation of the new password to ensure it matches.
+ */
+
+export interface ChangePasswordRequest {
+	currentPassword: string;
+	newPassword: string;
+	confirmPassword: string;
+}
+
+/**
+ * Represents the response returned after a user's password has been changed.
+ *
+ * @property message - A descriptive message about the password change operation.
+ * @property timestamp - The ISO string representing the time when the password change occurred.
+ */
+
+export interface ChangePasswordResponse {
+	message: string;
+	timestamp: string;
+}
+
+/**
  * Represents a Data Transfer Object (DTO) for user information extracted from a JWT payload.
  * This class encapsulates user details, roles, scopes, and token expiration data, providing
  * methods to create instances and serialize to JSON responses.
