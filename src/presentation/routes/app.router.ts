@@ -1,13 +1,14 @@
 import { Router, Request, Response } from 'express';
 
 import { Injectable } from '@shared';
-import type { HomeResponse, IClock, IConfig, IHealthService, IJwtVerifierClient, ILogger } from '@interfaces';
+import type { HomeResponse, IClock, IConfig, IHealthService, IJwtVerifierClient, ILogger, ISessionManager } from '@interfaces';
 import { createHealthRoutes } from './health.routes.js';
 import { createMeRoutes } from './me.routes.js';
 import { MeController } from '../controllers/me.controller.js';
 import { createAuthMiddleware } from '../middlewares/auth.middleware.js';
 import { AuthController } from '../controllers/auth.controller.js';
 import { createAuthRoutes } from './auth.routes.js';
+import { createCookieAuthMiddleware } from '../middlewares/session.middleware.js';
 
 /**
  * Extends the global ServiceMap interface to include the IConfig interface.
@@ -36,6 +37,7 @@ export class AppRouter {
 		private readonly heathService: IHealthService,
 		private readonly logger: ILogger,
 		private readonly jwtVerifier: IJwtVerifierClient,
+		private readonly sessionManager: ISessionManager,
 		private readonly meCtl: MeController,
 		private readonly authCtl: AuthController
 	) {
@@ -66,6 +68,7 @@ export class AppRouter {
 		const baseurl = `${this.config.serviceUrl}:${this.config.port}`;
 
 		const requireAuth = createAuthMiddleware(this.jwtVerifier, this.logger);
+		const _requireSession = createCookieAuthMiddleware(this.sessionManager, this.config.sessionCookieName, this.logger);
 
 		//Auth
 		this.router.use('/auth', createAuthRoutes(this.authCtl));

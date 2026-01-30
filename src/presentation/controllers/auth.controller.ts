@@ -92,7 +92,6 @@ export class AuthController {
 
 			res.cookie(this.sessionCookieName, result.sessionId, this.cookieOptions);
 
-			// TODO Cambiar a rediredcción
 			res.redirect(result.redirectTo);
 		} catch (error) {
 			next(error);

@@ -7,6 +7,14 @@ declare global {
 			logger?: ILogger;
 			startTime?: number;
 			user?: IJwtPayload;
+			session?: {
+				sessionId: string;
+				userId: string;
+				accessToken: string;
+				refreshToken: string | null;
+				tokenType: string;
+				expiresAt: number;
+			};
 		}
 	}
 }
