@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import type { IConfig, IJwksClient, ILogger, JWK, JWKSResponse } from '@interfaces';
+import type { IConfig, IHttpClient, IJwksClient, ILogger, JWK, JWKSResponse } from '@interfaces';
 import { AuthenticatedError, getErrMessage, Injectable, LogContextClass, LogContextMethod } from '@shared';
 
 /**
@@ -21,23 +21,20 @@ import { AuthenticatedError, getErrMessage, Injectable, LogContextClass, LogCont
  */
 
 @LogContextClass()
-@Injectable({ name: 'JwksClient', depends: ['Config', 'Logger'] })
+@Injectable({ name: 'JwksClient', depends: ['Config', 'HttpClient', 'Logger'] })
 export class JwksClient implements IJwksClient {
 	private cache: Map<string, string> = new Map();
 	private cacheTimestamp: number = 0;
 	private readonly CACHE_TTL: number;
 	private readonly jwksUrl: string;
-	private readonly serviceName: string;
-	private readonly version: string;
 
 	constructor(
 		config: IConfig,
+		private readonly httpClient: IHttpClient,
 		private readonly logger: ILogger
 	) {
 		this.CACHE_TTL = config.jwksCacheTtl * 1000;
 		this.jwksUrl = config.jwksUrl;
-		this.serviceName = config.serviceName;
-		this.version = config.version;
 	}
 
 	/**
@@ -61,19 +58,16 @@ export class JwksClient implements IJwksClient {
 		this.logger.debug('Fetching JWKS from OAuth2', { jwksUrl: this.jwksUrl });
 
 		try {
-			const response = await fetch(this.jwksUrl, {
-				method: 'GET',
+			const response = await this.httpClient.get<JWKSResponse>(this.jwksUrl, {
 				headers: {
 					Accept: 'application/json',
-					'User-Agent': `${this.serviceName}/${this.version}`,
 				},
-				signal: AbortSignal.timeout(5000),
+				timeout: 5000,
+				retry: true,
+				maxRetries: 3,
 			});
 
-			if (!response.ok)
-				throw new AuthenticatedError(`Failed to fetch JWKS: ${response.status} ${response.statusText}`, 'Jwks Fetch Failed');
-
-			const jwks: JWKSResponse = (await response.json()) as JWKSResponse;
+			const jwks = response.data;
 
 			if (!jwks.keys || !Array.isArray(jwks.keys) || jwks.keys.length === 0)
 				throw new AuthenticatedError('Invalid JWKS response: no keys found', 'Invalid Jwks Response');

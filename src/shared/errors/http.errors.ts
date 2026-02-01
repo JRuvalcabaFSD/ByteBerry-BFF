@@ -1,4 +1,5 @@
 import { AppError, ErrorType } from '@domain';
+import { AxiosError } from 'axios';
 
 /**
  * Represents a validation or HTTP error for a specific field.
@@ -348,5 +349,45 @@ export class ForbiddenError extends HttpError {
 		this.name = 'ForbiddenError';
 
 		Error.captureStackTrace(this, ForbiddenError);
+	}
+}
+
+/**
+ * Represents an HTTP error that occurs during an Axios request.
+ *
+ * This error class extends `HttpError` and is designed to wrap errors thrown by Axios,
+ * providing a standardized structure for HTTP errors within the application.
+ *
+ * The constructor analyzes the provided `AxiosError` to determine the error message,
+ * cause, and HTTP status code, handling different scenarios such as:
+ * - Server responded with an error status
+ * - No response received from the server
+ * - Error occurred while setting up the request
+ *
+ * @extends HttpError
+ * @param error - The Axios error object to wrap.
+ */
+
+export class AxiosErrors extends HttpError {
+	constructor(error: AxiosError) {
+		let msg: string = 'Unknown HTTP error';
+		let cause: string = 'Unknown fetch error';
+		let statusCode: number = error.status ?? 500;
+
+		if (error.response) {
+			msg = `HTTP ${error.response.status}: ${error.response.statusText} - ${JSON.stringify(error.response.data)}`;
+			statusCode = error.response.status;
+			cause = 'Server responded with error status';
+		}
+
+		if (error.request) {
+			msg = `No response received: ${error.message}`;
+			cause = 'Request was made but no response received';
+		}
+
+		msg = `Request setup error: ${error.message}`;
+		cause = 'Error setting up request';
+
+		super(msg, 'http', cause, statusCode);
 	}
 }

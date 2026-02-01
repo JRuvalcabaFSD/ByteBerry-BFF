@@ -91,6 +91,7 @@
 		"@prisma/adapter-pg": "^7.1.0",
 		"@prisma/client": "^7.1.0",
 		"@tailwindcss/postcss": "^4.1.18",
+		"axios": "^1.13.4",
 		"bcrypt": "^6.0.0",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",

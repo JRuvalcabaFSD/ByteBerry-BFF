@@ -1,23 +1,39 @@
-import { UserInfoDTO } from '@application';
-import { IJwtPayload } from '@interfaces';
+import { UserResponse, UserTokenResponse } from '@application';
 
 //TODO documentar
 declare module '@ServiceMap' {
 	interface ServiceMap {
-		GetCurrentUserUseCase: IGetCurrentUserUseCase;
+		GetUserProfileUseCase: IGetUserProfileUseCase;
+		GetUserByTokenUseCase: IGetUserByTokenUseCase;
 	}
 }
 
 /**
- * Interface for the use case to retrieve the current user's information.
+ * Represents a use case for retrieving the current authenticated user's information.
+ *
+ * @interface IGetCurrentUserUseCase
+ *
+ * @method execute - Retrieves the current user's information using an access token.
+ * @param {string} accessToken - The access token used to authenticate and retrieve the current user.
+ * @returns {Promise<UserResponse>} A promise that resolves to the current user's information.
  */
 
-export interface IGetCurrentUserUseCase {
-	/**
-	 * Executes the use case to get the current user based on token information.
-	 * @param payload - The user information extracted from the token.
-	 * @returns A promise that resolves to the user's information.
-	 */
+export interface IGetUserProfileUseCase {
+	execute(accessToken: string): Promise<UserResponse>;
+}
 
-	execute(payload: IJwtPayload, requestId: string): Promise<UserInfoDTO>;
+/**
+ * Use case interface for retrieving a user based on an access token.
+ *
+ * @remarks
+ * Implementations of this interface should handle the logic for validating the access token
+ * and returning the corresponding user information.
+ *
+ * @method execute
+ * @param accessToken - The access token used to identify and authenticate the user.
+ * @returns A promise that resolves to a {@link UserTokenResponse} containing user details.
+ */
+
+export interface IGetUserByTokenUseCase {
+	execute(accessToken: string): Promise<UserTokenResponse>;
 }

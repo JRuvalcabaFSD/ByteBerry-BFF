@@ -1,5 +1,5 @@
-import type { AuthorizationUrlParams, IOAuthClient, IConfig, ILogger, TokenResponse, TokenValidationResponse } from '@interfaces';
-import { Injectable, LogContextClass, LogContextMethod } from '@shared';
+import type * as Interfaces from '@interfaces';
+import { getErrMessage, Injectable, LogContextClass, LogContextMethod } from '@shared';
 
 /**
  * OAuth2 client implementation for handling authentication flows.
@@ -11,19 +11,16 @@ import { Injectable, LogContextClass, LogContextMethod } from '@shared';
  */
 
 @LogContextClass()
-@Injectable({ name: 'OAuthClient', depends: ['Config', 'Logger'] })
-export class OAuthClient implements IOAuthClient {
-	private readonly maxRetries: number;
-	private readonly retryDelayMs: number;
+@Injectable({ name: 'OAuthClient', depends: ['Config', 'HttpClient', 'Logger'] })
+export class OAuthClient implements Interfaces.IOAuthClient {
 	private readonly oauth2ServiceUrl: string;
 	private readonly clientId: string;
 
 	constructor(
-		config: IConfig,
-		private readonly logger: ILogger
+		config: Interfaces.IConfig,
+		private readonly httpClient: Interfaces.IHttpClient,
+		private readonly logger: Interfaces.ILogger
 	) {
-		this.maxRetries = config.httpMaxRetries ?? 3;
-		this.retryDelayMs = config.httpRetryDelay ?? 1000;
 		this.oauth2ServiceUrl = config.oauth2ServiceUrl;
 		this.clientId = config.bffClientId;
 	}
@@ -36,7 +33,7 @@ export class OAuthClient implements IOAuthClient {
 	 */
 
 	@LogContextMethod()
-	public getAuthorizationUrl(params: AuthorizationUrlParams): string {
+	public getAuthorizationUrl(params: Interfaces.AuthorizationUrlParams): string {
 		const url = new URL('/auth/authorize', this.oauth2ServiceUrl);
 
 		url.searchParams.append('response_type', 'code');
@@ -66,7 +63,7 @@ export class OAuthClient implements IOAuthClient {
 	 */
 
 	@LogContextMethod()
-	public async exchangeCodeForToken(code: string, codeVerifier: string, redirectUri: string): Promise<TokenResponse> {
+	public async exchangeCodeForToken(code: string, codeVerifier: string, redirectUri: string): Promise<Interfaces.TokenResponse> {
 		const url = `${this.oauth2ServiceUrl}/auth/token`;
 
 		const body = new URLSearchParams({
@@ -79,18 +76,21 @@ export class OAuthClient implements IOAuthClient {
 
 		this.logger.debug('Exchanging code for token', { clientId: this.clientId, redirectUri });
 
-		return this.retryableRequest<TokenResponse>(
-			url,
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-					Accept: 'application/json',
-				},
-				body: body.toString(),
+		const response = await this.httpClient.post<Interfaces.TokenResponse>(url, body.toString(), {
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				Accept: 'application/json',
 			},
-			'Token exchange'
-		);
+			retry: true,
+			maxRetries: 3,
+		});
+
+		this.logger.info('Authorization code exchanged successfully', {
+			tokenType: response.data.token_type,
+			expiresIn: response.data.expires_in,
+		});
+
+		return response.data;
 	}
 
 	/**
@@ -102,7 +102,7 @@ export class OAuthClient implements IOAuthClient {
 	 */
 
 	@LogContextMethod()
-	public async validateToken(_token: string): Promise<TokenValidationResponse> {
+	public async validateToken(_token: string): Promise<Interfaces.TokenValidationResponse> {
 		try {
 			this.logger.debug('Token validation requested (using JWKS verification)');
 			return {
@@ -128,7 +128,7 @@ export class OAuthClient implements IOAuthClient {
 	 */
 
 	@LogContextMethod()
-	public async refreshToken(refreshToken: string): Promise<TokenResponse> {
+	public async refreshToken(refreshToken: string): Promise<Interfaces.TokenResponse> {
 		const url = `${this.oauth2ServiceUrl}/auth/token`;
 
 		const body = new URLSearchParams({
@@ -141,18 +141,21 @@ export class OAuthClient implements IOAuthClient {
 			clientId: this.clientId,
 		});
 
-		return this.retryableRequest<TokenResponse>(
-			url,
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-					Accept: 'application/json',
-				},
-				body: body.toString(),
+		const response = await this.httpClient.post<Interfaces.TokenResponse>(url, body.toString(), {
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				Accept: 'application/json',
 			},
-			'Token refresh'
-		);
+			retry: true,
+			maxRetries: 3,
+		});
+
+		this.logger.info('Access token refreshed successfully', {
+			tokenType: response.data.token_type,
+			expiresIn: response.data.expires_in,
+		});
+
+		return response.data;
 	}
 
 	/**
@@ -183,97 +186,21 @@ export class OAuthClient implements IOAuthClient {
 		});
 
 		try {
-			await this.retryableRequest<void>(
-				url,
-				{
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/x-www-form-urlencoded',
-						Accept: 'application/json',
-					},
-					body: body.toString(),
+			await this.httpClient.post<void>(url, body.toString(), {
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					Accept: 'application/json',
 				},
-				'Token revocation'
-			);
+				retry: true,
+				maxRetries: 2,
+			});
 
 			this.logger.info('Token revoked successfully');
 		} catch (error) {
 			// Token revocation failures are often not critical
 			this.logger.warn('Token revocation failed', {
-				error: error instanceof Error ? error.message : 'Unknown error',
+				error: getErrMessage(error),
 			});
 		}
-	}
-
-	/**
-	 * Performs a retryable HTTP request with exponential backoff and logging.
-	 * Retries up to {@link maxRetries} times on failure, with a 10-second timeout per attempt.
-	 * Uses exponential backoff starting at {@link retryDelayMs} milliseconds.
-	 *
-	 * @template T - The expected type of the response data.
-	 * @param url - The URL to fetch.
-	 * @param options - The fetch options (e.g., method, headers).
-	 * @param operation - A descriptive name for the operation, used in logs and error messages.
-	 * @returns A promise that resolves to the parsed JSON response data of type T.
-	 * @throws {Error} If all retry attempts fail, with details about the last error.
-	 */
-
-	@LogContextMethod()
-	private async retryableRequest<T>(url: string, options: RequestInit, operation: string): Promise<T> {
-		let lastError: Error | null = null;
-
-		for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-			try {
-				const response = await fetch(url, {
-					...options,
-					signal: AbortSignal.timeout(10000), // 10 second timeout
-				});
-
-				if (!response.ok) {
-					const errorBody = await response.text();
-					throw new Error(`${operation} failed: ${response.status} ${response.statusText} - ${errorBody}`);
-				}
-
-				const data = await response.json();
-
-				this.logger.debug(`${operation} successful`, {
-					attempt,
-					url,
-				});
-
-				return data as T;
-			} catch (error) {
-				lastError = error instanceof Error ? error : new Error('Unknown error');
-
-				this.logger.warn(`${operation} failed, attempt ${attempt}/${this.maxRetries}`, {
-					error: lastError.message,
-					url,
-				});
-
-				if (attempt < this.maxRetries) {
-					// Exponential backoff: 1s, 2s, 4s
-					const delay = this.retryDelayMs * Math.pow(2, attempt - 1);
-					await this.sleep(delay);
-				}
-			}
-		}
-
-		this.logger.error(`${operation} failed after ${this.maxRetries} attempts`, {
-			error: lastError?.message,
-			url,
-		});
-
-		throw new Error(`${operation} failed after ${this.maxRetries} attempts: ${lastError?.message}`);
-	}
-
-	/**
-	 * Pauses execution for the specified number of milliseconds.
-	 * @param ms - The number of milliseconds to sleep.
-	 * @returns A promise that resolves after the specified delay.
-	 */
-
-	@LogContextMethod()
-	private sleep(ms: number): Promise<void> {
-		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 }

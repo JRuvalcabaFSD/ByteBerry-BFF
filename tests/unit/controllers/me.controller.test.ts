@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { IGetCurrentUserUseCase } from '@interfaces';
+import type { IGetUserProfileUseCase } from '@interfaces';
 import type { Request, Response, NextFunction } from 'express';
 import { MeController } from '@presentation';
 
 describe('MeController', () => {
 	let controller: MeController;
-	let mockUseCase: IGetCurrentUserUseCase;
+	let mockUseCase: IGetUserProfileUseCase;
 	let mockReq: Partial<Request>;
 	let mockRes: Partial<Response>;
 	let mockNext: NextFunction;

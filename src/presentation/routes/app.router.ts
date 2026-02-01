@@ -2,7 +2,15 @@ import { Router, Request, Response } from 'express';
 
 import { Injectable } from '@shared';
 import type { HomeResponse, IClock, IConfig, IHealthService, IJwtVerifierClient, ILogger, ISessionManager } from '@interfaces';
-import { AuthController, createAuthMiddleware, createAuthRoutes, createHealthRoutes, createMeRoutes, MeController } from '@presentation';
+import {
+	AuthController,
+	createAuthMiddleware,
+	createAuthRoutes,
+	createHealthRoutes,
+	createMeRouter,
+	createUserRoutes,
+	UserController,
+} from '@presentation';
 
 /**
  * Extends the global ServiceMap interface to include the IConfig interface.
@@ -20,7 +28,7 @@ declare module '@ServiceMap' {
 //TODO documentar
 @Injectable({
 	name: 'AppRouter',
-	depends: ['Config', 'Clock', 'HealthService', 'Logger', 'JwtVerifierClient', 'SessionManager', 'MeController', 'AuthController'],
+	depends: ['Config', 'Clock', 'HealthService', 'Logger', 'JwtVerifierClient', 'SessionManager', 'AuthController', 'UserController'],
 })
 export class AppRouter {
 	private readonly router: Router;
@@ -32,8 +40,8 @@ export class AppRouter {
 		private readonly logger: ILogger,
 		private readonly jwtVerifier: IJwtVerifierClient,
 		private readonly sessionManager: ISessionManager,
-		private readonly meCtl: MeController,
-		private readonly authCtl: AuthController
+		private readonly authCtl: AuthController,
+		private readonly userCtl: UserController
 	) {
 		this.router = Router();
 		this.setupRoutes();
@@ -66,8 +74,11 @@ export class AppRouter {
 		//Auth
 		this.router.use('/auth', createAuthRoutes(this.authCtl));
 
-		//Me
-		this.router.use('/api/user', requireAuth, createMeRoutes(this.meCtl));
+		// Me
+		this.router.use('/api', requireAuth, createMeRouter(this.userCtl));
+
+		// User
+		this.router.use('/api/users', requireAuth, createUserRoutes(this.userCtl));
 
 		//Health
 		this.router.use('/health', createHealthRoutes(this.heathService));
