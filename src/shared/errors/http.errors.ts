@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AppError, ErrorType } from '@domain';
 import { AxiosError } from 'axios';
 
@@ -373,11 +374,13 @@ export class AxiosErrors extends HttpError {
 		let msg: string = 'Unknown HTTP error';
 		let cause: string = 'Unknown fetch error';
 		let statusCode: number = error.status ?? 500;
+		let errors: ErrorList[] | undefined = undefined;
 
 		if (error.response) {
 			msg = `HTTP ${error.response.status}: ${error.response.statusText} - ${JSON.stringify(error.response.data)}`;
 			statusCode = error.response.status;
 			cause = 'Server responded with error status';
+			errors = (error.response as any).errorList;
 		}
 
 		if (error.request) {
@@ -388,6 +391,6 @@ export class AxiosErrors extends HttpError {
 		msg = `Request setup error: ${error.message}`;
 		cause = 'Error setting up request';
 
-		super(msg, 'http', cause, statusCode);
+		super(msg, 'http', cause, statusCode, errors);
 	}
 }

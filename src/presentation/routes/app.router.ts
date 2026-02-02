@@ -74,11 +74,11 @@ export class AppRouter {
 		//Auth
 		this.router.use('/auth', createAuthRoutes(this.authCtl));
 
+		// User
+		this.router.use('/api/users', createUserRoutes(this.userCtl, requireAuth));
+
 		// Me
 		this.router.use('/api', requireAuth, createMeRouter(this.userCtl));
-
-		// User
-		this.router.use('/api/users', requireAuth, createUserRoutes(this.userCtl));
 
 		//Health
 		this.router.use('/health', createHealthRoutes(this.heathService));

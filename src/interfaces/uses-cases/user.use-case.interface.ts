@@ -1,10 +1,11 @@
-import { UserResponse, UserTokenResponse } from '@application';
+import { RegisterUserRequest, RegisterUserResponse, UserResponse, UserTokenResponse } from '@application';
 
 //TODO documentar
 declare module '@ServiceMap' {
 	interface ServiceMap {
 		GetUserProfileUseCase: IGetUserProfileUseCase;
 		GetUserByTokenUseCase: IGetUserByTokenUseCase;
+		RegisterUserUseCase: IRegisterUserUseCase;
 	}
 }
 
@@ -36,4 +37,20 @@ export interface IGetUserProfileUseCase {
 
 export interface IGetUserByTokenUseCase {
 	execute(accessToken: string): Promise<UserTokenResponse>;
+}
+
+/**
+ * Use case interface for registering a new user.
+ *
+ * @remarks
+ * Implementations of this interface should handle the logic required to register a user,
+ * including validation, persistence, and any necessary side effects.
+ *
+ * @method execute
+ * @param data - The registration request containing user details.
+ * @returns A promise that resolves to the registration response.
+ */
+
+export interface IRegisterUserUseCase {
+	execute(data: RegisterUserRequest): Promise<RegisterUserResponse>;
 }

@@ -8,5 +8,6 @@ export * from './use-cases/auth/login.use-case.js';
 export * from './use-cases/auth/logout.use-case.js';
 export * from './use-cases/user/get-user-profile.use-case.js';
 export * from './use-cases/user/get-user-by-token.use-case.js';
+export * from './use-cases/user/register-user.use-case.js';
 
 //Validate schemas

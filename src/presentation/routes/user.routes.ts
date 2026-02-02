@@ -1,8 +1,9 @@
-import { Router } from 'express';
+import { RequestHandler, Router } from 'express';
 import { UserController } from '../controllers/user.controller.js';
 
-export function createUserRoutes(controller: UserController): Router {
+export function createUserRoutes(controller: UserController, requireAuth: RequestHandler): Router {
 	const router = Router();
-	router.get('/me', controller.getProfile);
+	router.get('/me', requireAuth, controller.getProfile);
+	router.post('/register', controller.registerUser);
 	return router;
 }
