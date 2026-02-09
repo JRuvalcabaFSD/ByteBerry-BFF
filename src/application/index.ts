@@ -10,5 +10,6 @@ export * from './use-cases/user/get-user-profile.use-case.js';
 export * from './use-cases/user/get-user-by-token.use-case.js';
 export * from './use-cases/user/register-user.use-case.js';
 export * from './use-cases/user/update-user.use-case.js';
+export * from './use-cases/user/update-password-use-case.js';
 
 //Validate schemas

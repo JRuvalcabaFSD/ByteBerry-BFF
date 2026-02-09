@@ -1,12 +1,18 @@
 import * as Dtos from '@application';
 
-//TODO documentar
+/**
+ * Extensión del mapa de servicios para incluir casos de uso relacionados con usuarios.
+ *
+ * Este módulo declara interfaces adicionales en el mapa de servicios global,
+ * permitiendo la inyección de dependencias para los casos de uso de usuario.
+ */
 declare module '@ServiceMap' {
 	interface ServiceMap {
 		GetUserProfileUseCase: IGetUserProfileUseCase;
 		GetUserByTokenUseCase: IGetUserByTokenUseCase;
 		RegisterUserUseCase: IRegisterUserUseCase;
 		UpdateProfileUseCase: IUpdateProfileUseCase;
+		UpdateUserPasswordUseCase: IUpdateUserPasswordUseCase;
 	}
 }
 
@@ -70,4 +76,21 @@ export interface IRegisterUserUseCase {
 
 export interface IUpdateProfileUseCase {
 	execute(accessToken: string, data: Dtos.UpdateUserRequest): Promise<Dtos.UpdateUserResponse>;
+}
+
+/**
+ * Use case interface for updating a user's password.
+ *
+ * @remarks
+ * Implementations of this interface should handle the logic required to update a user's password,
+ * including validation, security checks, and any necessary side effects.
+ *
+ * @method execute
+ * @param accessToken - The access token used to authenticate the user.
+ * @param data - The update request containing password details.
+ * @returns A promise that resolves to the update response.
+ */
+
+export interface IUpdateUserPasswordUseCase {
+	execute(accessToken: string, data: Dtos.UpdatePasswordRequest): Promise<Dtos.UpdatePasswordResponse>;
 }

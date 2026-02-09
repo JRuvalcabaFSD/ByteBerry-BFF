@@ -377,19 +377,17 @@ export class AxiosErrors extends HttpError {
 		let errors: ErrorList[] | undefined = undefined;
 
 		if (error.response) {
-			msg = `HTTP ${error.response.status}: ${error.response.statusText} - ${JSON.stringify(error.response.data)}`;
+			msg = `${(error.response.data as any).error}: ${(error.response.data as any).message}`;
 			statusCode = error.response.status;
 			cause = 'Server responded with error status';
 			errors = (error.response.data as any).errorList;
-		}
-
-		if (error.request) {
+		} else if (error.request) {
 			msg = `No response received: ${error.message}`;
 			cause = 'Request was made but no response received';
+		} else {
+			msg = `Request setup error: ${error.message}`;
+			cause = 'Error setting up request';
 		}
-
-		msg = `Request setup error: ${error.message}`;
-		cause = 'Error setting up request';
 
 		super(msg, 'http', cause, statusCode, errors);
 	}
