@@ -1,4 +1,4 @@
-import type { IGetUserByTokenUseCase, IGetUserProfileUseCase, IRegisterUserUseCase } from '@interfaces';
+import type { IGetUserByTokenUseCase, IGetUserProfileUseCase, IRegisterUserUseCase, IUpdateProfileUseCase } from '@interfaces';
 import { Injectable } from '@shared';
 import { NextFunction, Request, Response } from 'express';
 
@@ -9,12 +9,16 @@ declare module '@ServiceMap' {
 	}
 }
 
-@Injectable({ name: 'UserController', depends: ['GetUserProfileUseCase', 'GetUserByTokenUseCase', 'RegisterUserUseCase'] })
+@Injectable({
+	name: 'UserController',
+	depends: ['GetUserProfileUseCase', 'GetUserByTokenUseCase', 'RegisterUserUseCase', 'UpdateProfileUseCase'],
+})
 export class UserController {
 	constructor(
 		private readonly getProfileUseCase: IGetUserProfileUseCase,
 		private readonly getMeUseCase: IGetUserByTokenUseCase,
-		private readonly registerUseCase: IRegisterUserUseCase
+		private readonly registerUseCase: IRegisterUserUseCase,
+		private readonly updateUseCase: IUpdateProfileUseCase
 	) {}
 
 	public getMe = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -44,6 +48,17 @@ export class UserController {
 			const response = await this.registerUseCase.execute(req.body);
 
 			res.status(201).json(response);
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	public updateProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+		try {
+			const accessToken = req.session!.accessToken;
+			const response = await this.updateUseCase.execute(accessToken, req.body);
+
+			res.status(200).json(response);
 		} catch (error) {
 			next(error);
 		}

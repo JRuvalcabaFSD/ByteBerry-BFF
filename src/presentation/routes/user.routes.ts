@@ -5,5 +5,6 @@ export function createUserRoutes(controller: UserController, requireAuth: Reques
 	const router = Router();
 	router.get('/me', requireAuth, controller.getProfile);
 	router.post('/register', controller.registerUser);
+	router.put('/me', requireAuth, controller.updateProfile);
 	return router;
 }

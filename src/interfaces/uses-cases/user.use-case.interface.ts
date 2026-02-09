@@ -1,4 +1,4 @@
-import { RegisterUserRequest, RegisterUserResponse, UserResponse, UserTokenResponse } from '@application';
+import * as Dtos from '@application';
 
 //TODO documentar
 declare module '@ServiceMap' {
@@ -6,6 +6,7 @@ declare module '@ServiceMap' {
 		GetUserProfileUseCase: IGetUserProfileUseCase;
 		GetUserByTokenUseCase: IGetUserByTokenUseCase;
 		RegisterUserUseCase: IRegisterUserUseCase;
+		UpdateProfileUseCase: IUpdateProfileUseCase;
 	}
 }
 
@@ -20,7 +21,7 @@ declare module '@ServiceMap' {
  */
 
 export interface IGetUserProfileUseCase {
-	execute(accessToken: string): Promise<UserResponse>;
+	execute(accessToken: string): Promise<Dtos.UserResponse>;
 }
 
 /**
@@ -36,7 +37,7 @@ export interface IGetUserProfileUseCase {
  */
 
 export interface IGetUserByTokenUseCase {
-	execute(accessToken: string): Promise<UserTokenResponse>;
+	execute(accessToken: string): Promise<Dtos.UserTokenResponse>;
 }
 
 /**
@@ -52,5 +53,21 @@ export interface IGetUserByTokenUseCase {
  */
 
 export interface IRegisterUserUseCase {
-	execute(data: RegisterUserRequest): Promise<RegisterUserResponse>;
+	execute(data: Dtos.RegisterUserRequest): Promise<Dtos.RegisterUserResponse>;
+}
+
+/**
+ * Use case interface for updating a user's profile.
+ *
+ * @remarks
+ * Implementations of this interface should handle the logic required to update a user profile,
+ * including validation, persistence, and any necessary side effects.
+ *
+ * @method execute
+ * @param data - The update request containing user details.
+ * @returns A promise that resolves to the update response.
+ */
+
+export interface IUpdateProfileUseCase {
+	execute(accessToken: string, data: Dtos.UpdateUserRequest): Promise<Dtos.UpdateUserResponse>;
 }
