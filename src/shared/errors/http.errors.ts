@@ -380,7 +380,7 @@ export class AxiosErrors extends HttpError {
 			msg = `HTTP ${error.response.status}: ${error.response.statusText} - ${JSON.stringify(error.response.data)}`;
 			statusCode = error.response.status;
 			cause = 'Server responded with error status';
-			errors = (error.response as any).errorList;
+			errors = (error.response.data as any).errorList;
 		}
 
 		if (error.request) {
